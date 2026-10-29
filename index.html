@@ -4,16 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
 <meta name="theme-color" content="#f7f1e8">
-<link rel="icon" type="image/png" href="./calendar-thumbnail.png">
-<link rel="apple-touch-icon" href="./calendar-thumbnail.png">
-<meta property="og:type" content="website">
-<meta property="og:title" content="教會日曆">
-<meta property="og:description" content="聚會、同工安排、生日及全教會活動日曆。">
-<meta property="og:image" content="./calendar-thumbnail.png">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="教會日曆">
-<meta name="twitter:description" content="聚會、同工安排、生日及全教會活動日曆。">
-<meta name="twitter:image" content="./calendar-thumbnail.png">
 <title>教會日曆</title>
 <style>
 :root{
@@ -38,6 +28,7 @@ h1{font-size:clamp(1.25rem,4vw,2.25rem);margin:4px 0 0;letter-spacing:-.035em;ov
 .nav{display:flex;gap:5px;flex-shrink:0}
 .nav button{min-width:40px;min-height:40px;border:1px solid var(--line);background:var(--paper);color:var(--accent);border-radius:12px;padding:8px 11px;font-weight:700}
 .todaybtn{background:var(--accent)!important;color:white!important;border-color:var(--accent)!important}
+.landscape-calendar{display:none}
 .cal-shell{width:100%;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:clamp(10px,2vw,18px);overflow:hidden;box-shadow:0 8px 26px #5d47210d}
 .weekdays,.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));width:100%;min-width:0}
 .weekdays{background:#f0e6d9;border-bottom:1px solid var(--line)}
@@ -101,6 +92,11 @@ h1{font-size:clamp(1.25rem,4vw,2.25rem);margin:4px 0 0;letter-spacing:-.035em;ov
  .legend{padding:6px 10px;gap:5px 10px}
  .day-events{margin-top:8px}
  .feed iframe{height:50vh}
+ .monthbar,.cal-shell,.day-events,.notice{display:none!important}
+ .landscape-calendar{display:block!important;width:100%;height:calc(100dvh - 12px);min-height:280px;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+ .landscape-calendar iframe{display:block;width:100%;height:100%;min-height:280px;border:0}
+ .top{margin-bottom:5px}
+ .app{padding:6px 10px max(6px,env(safe-area-inset-bottom))}
 }
 @media(min-width:900px){
  .app{padding-top:28px}
@@ -124,6 +120,7 @@ h1{font-size:clamp(1.25rem,4vw,2.25rem);margin:4px 0 0;letter-spacing:-.035em;ov
       <button id="next" aria-label="下一個月">›</button>
     </div>
   </div>
+  <section class="landscape-calendar" id="landscapeCalendar" aria-label="橫向月曆"></section>
   <section class="cal-shell" aria-label="月曆">
     <div class="weekdays"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
     <div class="days" id="days"></div>
@@ -137,7 +134,7 @@ h1{font-size:clamp(1.25rem,4vw,2.25rem);margin:4px 0 0;letter-spacing:-.035em;ov
     <div class="calendar-checks" id="checks"></div>
     <div class="feed" id="feed"><div class="empty">選擇日期後，會在這裡顯示當日活動。</div></div>
   </section>
-  <div class="notice">日曆顏色及名稱依照你提供的截圖設定。為了讀取公開日曆的實際活動資料，下一步仍需連接可讀取 Google Calendar 活動的資料來源；目前此版先建立響應式月曆及日期選擇介面。公開日曆中的學生資料請先確認適合公開。</div>
+  <div class="notice">直向模式使用自訂月曆及所選日期活動區；橫向模式會切換為 Google Calendar 月檢視，讓活動名稱及時間直接顯示在日期格內。活動內容由公開 Google Calendar 載入；請先確認公開日曆中的學生資料適合公開。</div>
 </div>
 <script>
 const calendars=[
@@ -171,11 +168,37 @@ function renderLegend(){
  calendars.forEach(c=>{
   const label=document.createElement("label");label.className="check";
   const input=document.createElement("input");input.type="checkbox";input.checked=enabled.has(c.id);
-  input.addEventListener("change",()=>{input.checked?enabled.add(c.id):enabled.delete(c.id);renderDays();});
+  input.addEventListener("change",()=>{input.checked?enabled.add(c.id):enabled.delete(c.id);renderDays();renderLandscapeCalendar();});
   const dot=document.createElement("span");dot.className="mark";dot.style.background=c.color;
   const name=document.createElement("span");name.textContent=c.name;
   label.append(input,dot,name);$("checks").append(label);
  });
+}
+function renderLandscapeCalendar(){
+ const host=$("landscapeCalendar");
+ if(!host)return;
+ host.innerHTML="";
+ if(!enabled.size){
+  host.innerHTML='<div class="empty">請先選擇至少一個日曆。</div>';return;
+ }
+ const url=new URL("https://calendar.google.com/calendar/embed");
+ url.searchParams.set("mode","MONTH");
+ url.searchParams.set("ctz","Asia/Hong_Kong");
+ url.searchParams.set("showTitle","0");
+ url.searchParams.set("showTabs","0");
+ url.searchParams.set("showPrint","0");
+ url.searchParams.set("showCalendars","0");
+ url.searchParams.set("showTz","0");
+ url.searchParams.set("bgcolor","#fffdf9");
+ calendars.filter(c=>enabled.has(c.id)).forEach(c=>{
+  url.searchParams.append("src",c.id);
+  url.searchParams.append("color",c.color);
+ });
+ const iframe=document.createElement("iframe");
+ iframe.title="橫向月曆：顯示活動名稱及時間";
+ iframe.src=url.toString();
+ iframe.loading="lazy";
+ host.append(iframe);
 }
 function renderDays(){
  $("monthTitle").textContent=new Intl.DateTimeFormat("zh-Hant-HK",{year:"numeric",month:"long"}).format(new Date(shown.getFullYear(),shown.getMonth(),15));
@@ -224,7 +247,7 @@ function renderSelectedDay(){
 $("prev").addEventListener("click",()=>{shown=new Date(shown.getFullYear(),shown.getMonth()-1,1);selected=new Date(shown.getFullYear(),shown.getMonth(),Math.min(selected.getDate(),new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate()));renderDays();});
 $("next").addEventListener("click",()=>{shown=new Date(shown.getFullYear(),shown.getMonth()+1,1);selected=new Date(shown.getFullYear(),shown.getMonth(),Math.min(selected.getDate(),new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate()));renderDays();});
 $("today").addEventListener("click",()=>{todayDate=nowHK();shown=new Date(todayDate.getFullYear(),todayDate.getMonth(),1);selected=new Date(todayDate.getFullYear(),todayDate.getMonth(),todayDate.getDate());renderDays();});
-renderLegend();renderDays();updateClock();setInterval(updateClock,1000);
+renderLegend();renderDays();renderLandscapeCalendar();updateClock();setInterval(updateClock,1000);
 </script>
 </body>
 </html>
