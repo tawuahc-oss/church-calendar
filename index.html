@@ -67,7 +67,28 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
 .check{display:inline-flex;align-items:center;gap:5px;background:#f8f2e9;border:1px solid #e9dece;border-radius:999px;padding:6px 8px;font-size:.76rem;cursor:pointer}
 .check input{accent-color:var(--accent);margin:0}
 .feed{padding:0 12px 12px}
-.feed iframe{display:block;width:100%;height:350px;border:0}
+.feed iframe{display:block;width:100%;height:350px;border:0;background:var(--paper)}
+.day-event-list{display:grid;gap:7px;padding:10px 0 12px}
+.day-event-item{display:flex;align-items:flex-start;gap:9px;width:100%;text-align:left;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);cursor:pointer}
+.day-event-item:hover{border-color:var(--accent)}
+.day-event-dot{width:11px;height:11px;min-width:11px;border-radius:50%;margin-top:4px}
+.day-event-copy{min-width:0;flex:1}
+.day-event-name{font-weight:750;overflow-wrap:anywhere}
+.day-event-meta{font-size:.8rem;color:var(--muted);margin-top:3px}
+.empty-day{padding:16px 4px;color:var(--muted);font-size:.9rem}
+.event-modal{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:18px;background:#0008}
+.event-modal.open{display:flex}
+.event-dialog{width:min(520px,100%);max-height:85dvh;overflow:auto;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 20px 70px #0004}
+.event-dialog-head{display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+.event-dialog h2{font-size:1.2rem;margin:0;overflow-wrap:anywhere}
+.event-close{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:4px 10px;cursor:pointer;flex-shrink:0}
+.event-detail-row{display:flex;gap:9px;margin-top:14px;line-height:1.5}
+.event-detail-label{width:64px;min-width:64px;color:var(--muted);font-size:.85rem}
+.event-detail-value{overflow-wrap:anywhere;white-space:pre-wrap}
+.event-detail-color{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
+body[data-theme="night"] .day-event-item{background:var(--paper);color:var(--ink)}
+body[data-theme="night"] .event-dialog{background:var(--paper);color:var(--ink)}
+body[data-theme="night"] .feed iframe{background:#17191f}
 .notice{font-size:.76rem;line-height:1.5;color:var(--muted);padding:12px 3px}
 .landscape-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
 .landscape-nav{margin-left:auto;justify-content:flex-end}
@@ -193,8 +214,19 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
   <a class="google-link" id="openDay" href="https://calendar.google.com/" target="_blank" rel="noopener noreferrer">在 Google Calendar 開啟 ↗</a>
  </div>
  <div class="calendar-checks" id="checks"></div>
+ <div class="day-event-list" id="dayEventList"></div>
  <div class="feed" id="feed"></div>
 </section>
+
+<div class="event-modal" id="eventModal" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
+ <div class="event-dialog">
+  <div class="event-dialog-head">
+   <h2 id="eventModalTitle">活動詳情</h2>
+   <button class="event-close" id="eventClose" type="button">關閉</button>
+  </div>
+  <div id="eventModalBody"></div>
+ </div>
+</div>
 
 <div class="notice">直向模式以圓點標示有活動的日期；橫向模式及桌面版會顯示活動名稱及時間。可用上方類別選項篩選活動。活動資料依賴公開日曆資料來源及外部轉接服務。</div>
 </div>
@@ -227,10 +259,7 @@ const dayNames=["日","一","二","三","四","五","六"];
 function dateLabel(d){
  return new Intl.DateTimeFormat("zh-Hant-HK",{
   timeZone:"Asia/Hong_Kong",
-  year:"numeric",
-  month:"long",
-  day:"numeric",
-  weekday:"long"
+  year:"numeric",month:"long",day:"numeric",weekday:"long"
  }).format(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),4)));
 }
 
@@ -248,10 +277,19 @@ function toggleTheme(){
  setTheme(document.body.dataset.theme==="night"?"day":"night");
 }
 
+function updateClock(){
+ const n=new Date();
+ $("time").textContent=new Intl.DateTimeFormat("en-GB",{
+  timeZone:"Asia/Hong_Kong",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false
+ }).format(n);
+ $("dateLabel").textContent=new Intl.DateTimeFormat("zh-Hant-HK",{
+  timeZone:"Asia/Hong_Kong",year:"numeric",month:"short",day:"numeric",weekday:"short"
+ }).format(n);
+}
+
 function monthName(d){
  return new Intl.DateTimeFormat("zh-Hant-HK",{
-  year:"numeric",
-  month:"long"
+  year:"numeric",month:"long"
  }).format(new Date(d.getFullYear(),d.getMonth(),15));
 }
 
@@ -305,6 +343,8 @@ function parseICSEvent(block){
  const startProp=first("DTSTART");
  const endProp=first("DTEND");
  const summaryProp=first("SUMMARY");
+ const descriptionProp=first("DESCRIPTION");
+ const locationProp=first("LOCATION");
  const ruleProp=first("RRULE");
  const statusProp=first("STATUS");
  const ridProp=first("RECURRENCE-ID");
@@ -321,10 +361,10 @@ function parseICSEvent(block){
  });
 
  return {
-  props,
-  start,
-  end,
+  props,start,end,
   title:unescapeICS(summaryProp?.value)||"(沒有活動名稱)",
+  description:unescapeICS(descriptionProp?.value||""),
+  location:unescapeICS(locationProp?.value||""),
   rule:ruleProp?.value||"",
   status:(statusProp?.value||"").toUpperCase(),
   recurrenceId:ridProp?parseDate(ridProp.value):null,
@@ -347,10 +387,14 @@ function addCalendarEvent(c,event,d,monthStart,monthEnd){
   if(day>=monthStart&&day<monthEnd){
    addEvent(day,{
     title:event.title,
+    description:event.description||"",
+    location:event.location||"",
     time:formatTime(event.start),
     calendarId:c.id,
+    calendarName:c.name,
     color:c.color,
-    allDay:event.start.allDay
+    allDay:event.start.allDay,
+    date:new Date(d.getFullYear(),d.getMonth(),d.getDate())
    });
   }
  }
@@ -422,7 +466,7 @@ function parseCalendarEvents(text,c,monthStart,monthEnd){
  const blocks=text.split("BEGIN:VEVENT").slice(1).map(b=>b.split("END:VEVENT")[0]);
  const parsed=blocks.map(parseICSEvent).filter(e=>e.start);
 
- // EXDATE及個別重複場次的例外記錄會排除原本自動展開的活動。
+ // EXDATE and detached recurrence records suppress the generated original instance.
  const excluded=new Set();
 
  parsed.forEach(e=>{
@@ -432,7 +476,6 @@ function parseCalendarEvents(text,c,monthStart,monthEnd){
 
  parsed.forEach(e=>{
   if(e.recurrenceId){
-   // 已取消的場次不顯示；修改過日期的場次則顯示在新日期。
    if(e.status!=="CANCELLED"&&e.start.date>=monthStart&&e.start.date<monthEnd){
     addCalendarEvent(c,e,e.start.date,monthStart,monthEnd);
    }
@@ -456,10 +499,8 @@ async function fetchCalendarText(ics){
   try{
    const res=await fetch(target);
    if(!res.ok)throw new Error(`HTTP ${res.status}`);
-
    const text=await res.text();
    if(!text.includes("BEGIN:VCALENDAR"))throw new Error("Invalid calendar feed");
-
    return text;
   }catch(err){
    lastError=err;
@@ -478,7 +519,6 @@ async function loadEvents(){
 
  await Promise.all(calendars.filter(c=>enabled.has(c.id)).map(async c=>{
   try{
-   // 香港節慶假日使用政府 ICS；其他日曆使用 Google Calendar ICS。
    const ics=c.feedUrl||
     `https://calendar.google.com/calendar/ical/${encodeURIComponent(c.id)}/public/basic.ics`;
 
@@ -490,13 +530,8 @@ async function loadEvents(){
  }));
 
  const categoryPriority=[
-  "學生生日",
-  "香港節慶假日",
-  "全教會",
-  "區",
-  "學生聚會",
-  "學生周間聚會",
-  "學生同工"
+  "學生生日","香港節慶假日","全教會","區",
+  "學生聚會","學生周間聚會","學生同工"
  ];
 
  const priorityById=new Map(calendars.map(c=>[
@@ -622,7 +657,6 @@ function renderPortrait(){
  const first=new Date(shown.getFullYear(),shown.getMonth(),1).getDay();
  const count=new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate();
  const host=$("days");
-
  host.innerHTML="";
 
  for(let i=0;i<first;i++){
@@ -644,7 +678,6 @@ function renderPortrait(){
   n.textContent=d;
 
   b.append(n,makeDot(date));
-
   b.addEventListener("click",()=>{
    selected=date;
    renderPortrait();
@@ -657,10 +690,107 @@ function renderPortrait(){
  renderSelected();
 }
 
+function showEventDetails(e,date){
+ const modal=$("eventModal");
+ const body=$("eventModalBody");
+ $("eventModalTitle").textContent=e.title;
+ body.innerHTML="";
+
+ const rows=[
+  ["日期",dateLabel(date||e.date||selected)],
+  ["時間",e.allDay?"全日":e.time],
+  ["日曆",e.calendarName||(calendars.find(c=>c.id===e.calendarId)?.name||"")],
+  ["地點",e.location||""],
+  ["內容",e.description||""]
+ ];
+
+ rows.forEach(([label,value])=>{
+  if(!value)return;
+
+  const row=document.createElement("div");
+  row.className="event-detail-row";
+
+  const lab=document.createElement("div");
+  lab.className="event-detail-label";
+  lab.textContent=label;
+
+  const val=document.createElement("div");
+  val.className="event-detail-value";
+
+  if(label==="日曆"){
+   const dot=document.createElement("span");
+   dot.className="event-detail-color";
+   dot.style.background=e.color;
+   val.append(dot,document.createTextNode(value));
+  }else{
+   val.textContent=value;
+  }
+
+  row.append(lab,val);
+  body.append(row);
+ });
+
+ if(!e.location&&!e.description){
+  const note=document.createElement("div");
+  note.className="event-detail-row";
+
+  const value=document.createElement("div");
+  value.className="event-detail-value";
+  value.textContent="這個活動的公開日曆資料沒有提供其他描述或地點。";
+
+  note.append(value);
+  body.append(note);
+ }
+
+ modal.classList.add("open");
+}
+
+function closeEventDetails(){
+ $("eventModal").classList.remove("open");
+}
+
 function renderSelected(){
  $("eventTitle").textContent="當日活動";
  $("eventDate").textContent=dateLabel(selected);
- $("feed").innerHTML="";
+
+ const listHost=$("dayEventList");
+ listHost.innerHTML="";
+
+ const dayEvents=(eventsByDate.get(key(selected))||[])
+  .filter(e=>enabled.has(e.calendarId));
+
+ if(!dayEvents.length){
+  const empty=document.createElement("div");
+  empty.className="empty-day";
+  empty.textContent="這一天沒有已載入的活動。";
+  listHost.append(empty);
+ }
+
+ dayEvents.forEach(e=>{
+  const button=document.createElement("button");
+  button.type="button";
+  button.className="day-event-item";
+
+  const dot=document.createElement("span");
+  dot.className="day-event-dot";
+  dot.style.background=e.color;
+
+  const copy=document.createElement("span");
+  copy.className="day-event-copy";
+
+  const name=document.createElement("div");
+  name.className="day-event-name";
+  name.textContent=e.title;
+
+  const meta=document.createElement("div");
+  meta.className="day-event-meta";
+  meta.textContent=`${e.allDay?"全日":e.time} · ${e.calendarName||(calendars.find(c=>c.id===e.calendarId)?.name||"")}`;
+
+  copy.append(name,meta);
+  button.append(dot,copy);
+  button.addEventListener("click",()=>showEventDetails(e,selected));
+  listHost.append(button);
+ });
 
  const url=new URL("https://calendar.google.com/calendar/embed");
  url.searchParams.set("mode","AGENDA");
@@ -675,16 +805,21 @@ function renderSelected(){
   `${key(selected)}/${key(new Date(selected.getFullYear(),selected.getMonth(),selected.getDate()+1))}`
  );
 
- // 外部政府 ICS 不是 Google Calendar ID，因此不傳入 Google 的嵌入視窗。
+ const night=document.body.dataset.theme==="night";
+ url.searchParams.set("bgcolor",night?"#17191f":"#fffdf9");
+
  calendars.filter(c=>enabled.has(c.id)&&!c.feedUrl).forEach(c=>{
   url.searchParams.append("src",c.id);
-  url.searchParams.append("color",c.color);
+  url.searchParams.append("color",night?"#41414b":c.color);
  });
 
  $("openDay").href=url.toString();
 
+ const feed=$("feed");
+ feed.innerHTML="";
+
  if(!enabled.size){
-  $("feed").innerHTML='<div class="empty">請先選擇至少一個日曆。</div>';
+  feed.innerHTML='<div class="empty-day">請先選擇至少一個日曆。</div>';
   return;
  }
 
@@ -692,7 +827,7 @@ function renderSelected(){
  iframe.title="所選日期的 Google Calendar 活動";
  iframe.src=url.toString();
  iframe.loading="lazy";
- $("feed").append(iframe);
+ feed.append(iframe);
 }
 
 function renderLandscape(){
@@ -740,9 +875,15 @@ function renderLandscape(){
   list.className="event-list";
 
   ev.forEach(e=>{
-   const pill=document.createElement("div");
+   const pill=document.createElement("button");
+   pill.type="button";
    pill.className="levent "+(e.allDay?"allday-event":"timed-event");
    pill.style.setProperty("--event-color",e.color+"88");
+   pill.style.width="100%";
+   pill.style.textAlign="left";
+   pill.style.border="0";
+   pill.style.cursor="pointer";
+   pill.title="按一下查看活動詳情";
 
    if(e.allDay){
     pill.style.background=e.color+"88";
@@ -766,6 +907,8 @@ function renderLandscape(){
    const title=document.createElement("span");
    title.textContent=e.title;
    pill.append(title);
+
+   pill.addEventListener("click",()=>showEventDetails(e,date));
    list.append(pill);
   });
 
@@ -811,12 +954,23 @@ function goToday(){
 $("prev").addEventListener("click",()=>shiftMonth(-1));
 $("next").addEventListener("click",()=>shiftMonth(1));
 $("today").addEventListener("click",goToday);
-
 $("lprev").addEventListener("click",()=>shiftMonth(-1));
 $("lnext").addEventListener("click",()=>shiftMonth(1));
 $("ltoday").addEventListener("click",goToday);
 
-$("themeToggle").addEventListener("click",toggleTheme);
+$("themeToggle").addEventListener("click",()=>{
+ toggleTheme();
+ renderSelected();
+});
+
+$("eventClose").addEventListener("click",closeEventDetails);
+$("eventModal").addEventListener("click",e=>{
+ if(e.target===$("eventModal"))closeEventDetails();
+});
+
+document.addEventListener("keydown",e=>{
+ if(e.key==="Escape")closeEventDetails();
+});
 
 setTheme("day");
 renderLegend();
