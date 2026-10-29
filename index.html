@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f7f1e8">
-<link rel="icon" type="image/png" href="/church-calendar/calendar-thumbnail.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/church-calendar/calendar-thumbnail.png">
+<link rel="icon" type="image/png" href="calendar-thumbnail.png">
+<link rel="apple-touch-icon" sizes="180x180" href="calendar-thumbnail.png">
 <meta name="apple-mobile-web-app-title" content="北區學生月程">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>北區學生月程</title>
@@ -116,39 +116,65 @@ body[data-theme="night"] .feed iframe{background:#17191f}
 .landscape-checks{padding:4px 0;gap:4px;border:0;overflow-x:auto;flex-wrap:nowrap;white-space:nowrap}
 .landscape-checks .check{flex-shrink:0;font-size:.78rem;padding:4px 7px}
 .event-list{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;flex:1}
-@media (orientation:portrait){.feed{display:none!important}}
+
+/* 直向模式不顯示底部 Google 日曆嵌入視窗 */
+@media (orientation:portrait){
+ .feed{display:none!important}
+}
+
 @media(max-width:600px) and (orientation:portrait){
- .app{padding:9px 7px}.brand{font-size:.6rem}h1{font-size:1.25rem}.top{margin-bottom:8px}
- .monthbar{margin:6px 0 9px}.nav button{min-width:33px;min-height:34px;padding:5px 8px}
- .weekdays div{font-size:.7rem;padding:6px 0}.day{min-height:clamp(44px,12vw,62px);gap:2px}
- .daynum{width:23px;height:23px;font-size:.82rem}.legend{gap:6px 9px;padding:8px}
- .legend-item{font-size:.7rem}.calendar-checks{padding:8px;gap:5px}.check{font-size:.69rem;padding:5px 6px}
+ .app{padding:9px 7px}
+ .brand{font-size:.6rem}
+ h1{font-size:1.25rem}
+ .top{margin-bottom:8px}
+ .monthbar{margin:6px 0 9px}
+ .nav button{min-width:33px;min-height:34px;padding:5px 8px}
+ .weekdays div{font-size:.7rem;padding:6px 0}
+ .day{min-height:clamp(44px,12vw,62px);gap:2px}
+ .daynum{width:23px;height:23px;font-size:.82rem}
+ .legend{gap:6px 9px;padding:8px}
+ .legend-item{font-size:.7rem}
+ .calendar-checks{padding:8px;gap:5px}
+ .check{font-size:.69rem;padding:5px 6px}
  .feed iframe{height:330px}
 }
+
 @media (orientation:landscape){
- .app{height:100dvh;max-width:none;padding:5px 8px;overflow:hidden}.top{height:34px;margin:0 0 3px}
+ .app{height:100dvh;max-width:none;padding:5px 8px;overflow:hidden}
+ .top{height:34px;margin:0 0 3px}
  .brand{display:block;font-size:.55rem;letter-spacing:.06em;line-height:1.1;margin-bottom:2px}
- h1{font-size:1rem;margin:0}.clock{font-size:.65rem}#time{font-size:.8rem}
+ h1{font-size:1rem;margin:0}
+ .clock{font-size:.65rem}
+ #time{font-size:.8rem}
  .monthbar,.cal-shell,.day-events,.notice{display:none!important}
  .landscape-calendar{display:block;height:calc(100dvh - 45px);width:100%}
- .landscape-head{height:29px;margin:0}.landscape-title{font-size:clamp(1rem,2.3vh,1.35rem)}
+ .landscape-head{height:29px;margin:0}
+ .landscape-title{font-size:clamp(1rem,2.3vh,1.35rem)}
  .landscape-head .nav button{min-height:27px;min-width:32px;padding:2px 8px;border-radius:6px;font-size:.9rem}
  .landscape-checks{height:34px;margin:0;overflow-x:auto;overflow-y:hidden}
  .landscape-checks .check{font-size:clamp(.68rem,1.5vh,.85rem);padding:4px 7px}
- .landscape-grid{height:calc(100% - 63px)}.lwday{font-size:clamp(.7rem,1.5vh,.9rem);padding:3px 0}
- .lday{padding:3px}.ldaynum{font-size:clamp(.78rem,1.8vh,1rem);margin-bottom:2px;flex-shrink:0}
+ .landscape-grid{height:calc(100% - 63px)}
+ .lwday{font-size:clamp(.7rem,1.5vh,.9rem);padding:3px 0}
+ .lday{padding:3px}
+ .ldaynum{font-size:clamp(.78rem,1.8vh,1rem);margin-bottom:2px;flex-shrink:0}
  .lday.today .ldaynum{width:22px;height:22px}
  .levent{font-size:clamp(.68rem,1.55vh,.9rem);line-height:1.2;padding:3px 4px;margin:1px 0}
- .levent.timed-event{padding:1px 0;gap:3px}.event-dot{width:5px;height:5px;min-width:5px}
+ .levent.timed-event{padding:1px 0;gap:3px}
+ .event-dot{width:5px;height:5px;min-width:5px}
 }
 @media (orientation:landscape) and (max-height:430px){
- .landscape-checks{height:28px}.landscape-grid{height:calc(100% - 57px)}
+ .landscape-checks{height:28px}
+ .landscape-grid{height:calc(100% - 57px)}
  .landscape-checks .check{font-size:.65rem;padding:3px 5px}
- .levent{font-size:clamp(.62rem,1.45vh,.78rem);padding:2px 3px}.levent.timed-event{padding:1px 0}
+ .levent{font-size:clamp(.62rem,1.45vh,.78rem);padding:2px 3px}
+ .levent.timed-event{padding:1px 0}
 }
 @media(min-width:1000px) and (pointer:fine) and (orientation:portrait){
- .app{max-width:1600px;padding:20px 24px}.month-title{font-size:2.5rem}
- .weekdays div{font-size:1rem}.daynum{font-size:1.1rem}.legend-item{font-size:.9rem}
+ .app{max-width:1600px;padding:20px 24px}
+ .month-title{font-size:2.5rem}
+ .weekdays div{font-size:1rem}
+ .daynum{font-size:1.1rem}
+ .legend-item{font-size:.9rem}
 }
 </style>
 </head>
@@ -224,14 +250,15 @@ body[data-theme="night"] .feed iframe{background:#17191f}
 
 <script>
 const calendars=[
- {name:"全教會",id:"5feb8669918e0c65e45c6debb6dc344a824f7d4bbe53887150df9bf8ed5596e2@group.calendar.google.com",color:"#7CB342"},
- {name:"區",id:"9d0718947251b0ecb937d26521e006c9e458155a8b0542442996ae64112a513e@group.calendar.google.com",color:"#B39DDB"},
- {name:"學生同工",id:"144b428f9fda4934be111d528e42fd6e831abf7880aca0b94576a6f449b5fb60@group.calendar.google.com",color:"#EF746C"},
- {name:"學生周間聚會",id:"6d5e78d1ae879ea7dd573f6193354eae02b085523b874cb0fb30b3736cd6e322@group.calendar.google.com",color:"#FFBF16"},
- {name:"學生生日",id:"640bce4eda2a30e86dfe565dee12ac630bdc9454004d219e3ab359682f722bfe@group.calendar.google.com",color:"#FF9800"},
- {name:"學生聚會",id:"0e5684c7eea55390ead078357f529444010f25599c092a48717bdb6bcbbb217d@group.calendar.google.com",color:"#03A9F4"},
- {name:"香港節慶假日",id:"hk-public-holidays",feedUrl:"https://www.1823.gov.hk/common/ical/gc/tc.ics",color:"#D95D39"}
+ {name:"全教會",id:"5feb8669918e0c65e45c6debb6dc344a824f7d4bbe53887150df9bf8ed5596e2@group.calendar.google.com",file:"all-church.ics",color:"#7CB342"},
+ {name:"區",id:"9d0718947251b0ecb937d26521e006c9e458155a8b0542442996ae64112a513e@group.calendar.google.com",file:"district.ics",color:"#B39DDB"},
+ {name:"學生同工",id:"144b428f9fda4934be111d528e42fd6e831abf7880aca0b94576a6f449b5fb60@group.calendar.google.com",file:"student-workers.ics",color:"#EF746C"},
+ {name:"學生周間聚會",id:"6d5e78d1ae879ea7dd573f6193354eae02b085523b874cb0fb30b3736cd6e322@group.calendar.google.com",file:"weekday-student-meeting.ics",color:"#FFBF16"},
+ {name:"學生生日",id:"640bce4eda2a30e86dfe565dee12ac630bdc9454004d219e3ab359682f722bfe@group.calendar.google.com",file:"student-birthdays.ics",color:"#FF9800"},
+ {name:"學生聚會",id:"0e5684c7eea55390ead078357f529444010f25599c092a48717bdb6bcbbb217d@group.calendar.google.com",file:"student-gatherings.ics",color:"#03A9F4"},
+ {name:"香港節慶假日",id:"hk-public-holidays",file:"hk-holidays.ics",color:"#D95D39"}
 ];
+
 
 const enabled=new Set(calendars.map(c=>c.id));
 const $=id=>document.getElementById(id);
@@ -245,9 +272,6 @@ let selected=new Date(today.getFullYear(),today.getMonth(),today.getDate());
 let eventsByDate=new Map(),dotsByDate=new Map();
 let loadSequence=0;
 
-const FEED_CACHE_TTL=5*60*1000;
-const feedMemoryCache=new Map();
-const feedRequests=new Map();
 
 function setLoading(active){
  const el=$("loadingStatus");
@@ -436,63 +460,18 @@ function parseCalendarEvents(text,c,monthStart,monthEnd){
  });
 }
 
-async function fetchCalendarText(ics,forceRefresh=false){
- const now=Date.now();
- if(forceRefresh){
-  feedMemoryCache.delete(ics);
-  try{localStorage.removeItem("churchCalendarICS:"+ics)}catch(_){}
- }
- const memory=feedMemoryCache.get(ics);
- if(!forceRefresh&&memory&&now-memory.time<FEED_CACHE_TTL)return memory.text;
-
- if(!forceRefresh){
-  try{
-   const stored=localStorage.getItem("churchCalendarICS:"+ics);
-   if(stored){
-    const item=JSON.parse(stored);
-    if(item&&item.text&&now-item.time<FEED_CACHE_TTL){
-     feedMemoryCache.set(ics,item);
-     return item.text;
-    }
-   }
-  }catch(_){}
- }
-
- if(feedRequests.has(ics))return feedRequests.get(ics);
-
- const request=(async()=>{
-  const encoded=encodeURIComponent(ics);
-  const targets=[
-   `https://api.allorigins.win/raw?url=${encoded}`,
-   `https://api.codetabs.com/v1/proxy?quest=${encoded}`,
-   `https://corsproxy.io/?url=${encoded}`
-  ];
-  let lastError;
-
-  for(let i=0;i<targets.length;i+=2){
-   try{
-    const text=await Promise.any(targets.slice(i,i+2).map(async target=>{
-     const controller=new AbortController();
-     const timeout=setTimeout(()=>controller.abort(),7000);
-     try{
-      const res=await fetch(target,{signal:controller.signal,cache:"no-store"});
-      if(!res.ok)throw new Error(`HTTP ${res.status}`);
-      const body=await res.text();
-      if(!body.includes("BEGIN:VCALENDAR"))throw new Error("Invalid calendar feed");
-      return body;
-     }finally{clearTimeout(timeout)}
-    }));
-    const item={text,time:Date.now()};
-    feedMemoryCache.set(ics,item);
-    try{localStorage.setItem("churchCalendarICS:"+ics,JSON.stringify(item))}catch(_){}
-    return text;
-   }catch(err){lastError=err}
-  }
-  throw lastError||new Error("Calendar feed unavailable");
- })();
-
- feedRequests.set(ics,request);
- try{return await request}finally{feedRequests.delete(ics)}
+async function fetchCalendarText(calendar,forceRefresh=false){
+ // The GitHub Actions workflow periodically downloads public ICS feeds into /data.
+ // For the hosted site use its own /data folder; for a local file use the published snapshot.
+ const base=location.protocol==="file:"
+  ? "https://tawuhac-oss.github.io/church-calendar/data/"
+  : new URL("data/",location.href).href;
+ const url=base+calendar.file+(forceRefresh?"?refresh="+Date.now():"");
+ const response=await fetch(url,{cache:forceRefresh?"no-store":"default"});
+ if(!response.ok)throw new Error(`Calendar snapshot HTTP ${response.status}`);
+ const text=await response.text();
+ if(!text.includes("BEGIN:VCALENDAR"))throw new Error("Invalid calendar snapshot");
+ return text;
 }
 
 async function loadEvents(forceRefresh=false){
@@ -507,9 +486,8 @@ async function loadEvents(forceRefresh=false){
 
  await Promise.all(calendars.filter(c=>enabled.has(c.id)).map(async c=>{
   try{
-   // Use public iCalendar feeds so no Google API key is required.
-   const icsUrl=c.feedUrl || `https://calendar.google.com/calendar/ical/${encodeURIComponent(c.id)}/public/basic.ics`;
-   const text=(await fetchCalendarText(icsUrl,forceRefresh)).replace(/\r?\n[ \t]/g,"");
+   // Load a public iCalendar snapshot generated automatically by GitHub Actions.
+   const text=(await fetchCalendarText(c,forceRefresh)).replace(/\r?\n[ \t]/g,"");
    if(thisLoad===loadSequence)parseCalendarEvents(text,c,ms,me);
   }catch(err){
    console.warn("Cannot load events for "+c.name,err);
@@ -786,7 +764,7 @@ function renderSelected(){
  feed.append(iframe);
 }
 
-function renderLandscape(){
+ function renderLandscape(){
  $("landscapeTitle").textContent=monthName(shown);
  const host=$("landscapeGrid");
  host.innerHTML="";
