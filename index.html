@@ -18,6 +18,9 @@ button,input{font:inherit}
 button{touch-action:manipulation}
 .app{max-width:1500px;margin:auto;padding:clamp(8px,2vw,24px);min-width:0}
 .theme-toggle{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:9px;padding:6px 10px;font-size:.8rem;font-weight:750;white-space:nowrap;cursor:pointer}
+.refresh-button{font-size:1.15rem;line-height:1;padding:5px 9px;min-width:34px;min-height:31px}
+.refresh-button:disabled{opacity:.55;cursor:wait}
+.refresh-button.spinning{animation:spin .75s linear infinite}
 .top-actions{display:flex;align-items:center;gap:10px}
 .loading-status{display:none;align-items:center;gap:6px;color:var(--muted);font-size:.76rem;white-space:nowrap}
 .loading-status.active{display:inline-flex}
@@ -104,7 +107,10 @@ body[data-theme="night"] .feed iframe{background:#17191f}
 .lday:nth-child(7n){border-right:0}
 .ldaynum{font-size:clamp(.68rem,.9vw,.9rem);font-weight:750;margin-bottom:2px}
 .lday.today .ldaynum{display:inline-flex;background:var(--accent);color:white;border-radius:50%;width:20px;height:20px;align-items:center;justify-content:center}
-.levent{font-size:clamp(.68rem,.82vw,.88rem);line-height:1.22;border-radius:3px;padding:3px 4px;margin:1px 0;overflow-wrap:anywhere;word-break:break-word;color:var(--ink);background:transparent;flex-shrink:0}.levent.allday-event{color:#2f2b26;background:var(--event-color);border-left:0!important;border-radius:3px;padding:3px 4px}.levent.timed-event{display:flex;align-items:flex-start;gap:4px;padding:2px 1px;margin:1px 0}.event-dot{display:inline-block;width:.9em;height:.9em;min-width:.9em;border-radius:50%;margin-top:.12em;flex-shrink:0}
+.levent{font-size:clamp(.68rem,.82vw,.88rem);line-height:1.22;border-radius:3px;padding:3px 4px;margin:1px 0;overflow-wrap:anywhere;word-break:break-word;color:var(--ink);background:transparent;flex-shrink:0}
+.levent.allday-event{color:#2f2b26;background:var(--event-color);border-left:0!important;border-radius:3px;padding:3px 4px}
+.levent.timed-event{display:flex;align-items:flex-start;gap:4px;padding:2px 1px;margin:1px 0}
+.event-dot{display:inline-block;width:.9em;height:.9em;min-width:.9em;border-radius:50%;margin-top:.12em;flex-shrink:0}
 .levent .etime{font-weight:750;white-space:nowrap}
 .landscape-empty{font-size:.8rem;color:var(--muted);padding:10px}
 .landscape-checks{padding:4px 0;gap:4px;border:0;overflow-x:auto;flex-wrap:nowrap;white-space:nowrap}
@@ -145,13 +151,16 @@ body[data-theme="night"] .feed iframe{background:#17191f}
  .lday{padding:3px}
  .ldaynum{font-size:clamp(.78rem,1.8vh,1rem);margin-bottom:2px;flex-shrink:0}
  .lday.today .ldaynum{width:22px;height:22px}
- .levent{font-size:clamp(.68rem,1.55vh,.9rem);line-height:1.2;padding:3px 4px;margin:1px 0}.levent.timed-event{padding:1px 0;gap:3px}.event-dot{width:5px;height:5px;min-width:5px}
+ .levent{font-size:clamp(.68rem,1.55vh,.9rem);line-height:1.2;padding:3px 4px;margin:1px 0}
+ .levent.timed-event{padding:1px 0;gap:3px}
+ .event-dot{width:5px;height:5px;min-width:5px}
 }
 @media (orientation:landscape) and (max-height:430px){
  .landscape-checks{height:28px}
  .landscape-grid{height:calc(100% - 57px)}
  .landscape-checks .check{font-size:.65rem;padding:3px 5px}
- .levent{font-size:clamp(.62rem,1.45vh,.78rem);padding:2px 3px}.levent.timed-event{padding:1px 0}
+ .levent{font-size:clamp(.62rem,1.45vh,.78rem);padding:2px 3px}
+ .levent.timed-event{padding:1px 0}
 }
 @media(min-width:1000px) and (pointer:fine) and (orientation:portrait){
  .app{max-width:1600px;padding:20px 24px}
@@ -172,6 +181,7 @@ body[data-theme="night"] .feed iframe{background:#17191f}
    <span id="loadingText">載入活動…</span>
   </span>
   <button class="theme-toggle" id="themeToggle" type="button" aria-label="切換日間及夜間模式">🌙 夜間</button>
+  <button class="theme-toggle refresh-button" id="refreshButton" type="button" aria-label="重新載入活動" title="重新載入活動">↻</button>
  </div>
 </header>
 
@@ -198,17 +208,16 @@ body[data-theme="night"] .feed iframe{background:#17191f}
 </section>
 
 <section class="cal-shell">
- <div class="weekdays"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
+ <div class="weekdays">
+  <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+ </div>
  <div class="days" id="days"></div>
  <div class="legend" id="legend"></div>
 </section>
 
 <section class="day-events">
  <div class="events-head">
-  <div>
-   <h2 id="eventTitle">當日活動</h2>
-   <div class="events-date" id="eventDate"></div>
-  </div>
+  <div><h2 id="eventTitle">當日活動</h2><div class="events-date" id="eventDate"></div></div>
   <a class="google-link" id="openDay" href="https://calendar.google.com/" target="_blank" rel="noopener noreferrer">在 Google Calendar 開啟 ↗</a>
  </div>
  <div class="calendar-checks" id="checks"></div>
@@ -443,7 +452,6 @@ function parseCalendarEvents(text,c,monthStart,monthEnd){
  const blocks=text.split("BEGIN:VEVENT").slice(1).map(b=>b.split("END:VEVENT")[0]);
  const parsed=blocks.map(parseICSEvent).filter(e=>e.start);
 
- // EXDATE and detached recurrence instances suppress generated occurrences.
  const excluded=new Set();
  parsed.forEach(e=>{
   e.exdates.forEach(k=>excluded.add(k));
@@ -463,22 +471,29 @@ function parseCalendarEvents(text,c,monthStart,monthEnd){
  });
 }
 
-async function fetchCalendarText(ics){
+async function fetchCalendarText(ics,forceRefresh=false){
  const now=Date.now();
+
+ if(forceRefresh){
+  feedMemoryCache.delete(ics);
+  try{localStorage.removeItem("churchCalendarICS:"+ics)}catch(_){}
+ }
+
  const memory=feedMemoryCache.get(ics);
+ if(!forceRefresh&&memory&&now-memory.time<FEED_CACHE_TTL)return memory.text;
 
- if(memory&&now-memory.time<FEED_CACHE_TTL)return memory.text;
-
- try{
-  const stored=localStorage.getItem("churchCalendarICS:"+ics);
-  if(stored){
-   const item=JSON.parse(stored);
-   if(item&&item.text&&now-item.time<FEED_CACHE_TTL){
-    feedMemoryCache.set(ics,item);
-    return item.text;
+ if(!forceRefresh){
+  try{
+   const stored=localStorage.getItem("churchCalendarICS:"+ics);
+   if(stored){
+    const item=JSON.parse(stored);
+    if(item&&item.text&&now-item.time<FEED_CACHE_TTL){
+     feedMemoryCache.set(ics,item);
+     return item.text;
+    }
    }
-  }
- }catch(_){}
+  }catch(_){}
+ }
 
  if(feedRequests.has(ics))return feedRequests.get(ics);
 
@@ -493,7 +508,6 @@ async function fetchCalendarText(ics){
 
   let lastError;
 
-  // Try two proxy providers concurrently, avoiding slow sequential timeouts.
   for(let i=0;i<targets.length;i+=2){
    const batch=targets.slice(i,i+2);
 
@@ -518,9 +532,7 @@ async function fetchCalendarText(ics){
     const item={text,time:Date.now()};
     feedMemoryCache.set(ics,item);
 
-    try{
-     localStorage.setItem("churchCalendarICS:"+ics,JSON.stringify(item));
-    }catch(_){}
+    try{localStorage.setItem("churchCalendarICS:"+ics,JSON.stringify(item))}catch(_){}
 
     return text;
    }catch(err){
@@ -533,14 +545,11 @@ async function fetchCalendarText(ics){
 
  feedRequests.set(ics,request);
 
- try{
-  return await request;
- }finally{
-  feedRequests.delete(ics);
- }
+ try{return await request}
+ finally{feedRequests.delete(ics)}
 }
 
-async function loadEvents(){
+async function loadEvents(forceRefresh=false){
  const thisLoad=++loadSequence;
  setLoading(true);
 
@@ -550,13 +559,12 @@ async function loadEvents(){
  const ms=new Date(shown.getFullYear(),shown.getMonth(),1);
  const me=new Date(shown.getFullYear(),shown.getMonth()+1,1);
 
- // Load every enabled calendar concurrently.
  await Promise.all(calendars.filter(c=>enabled.has(c.id)).map(async c=>{
   try{
    const ics=c.feedUrl||
     `https://calendar.google.com/calendar/ical/${encodeURIComponent(c.id)}/public/basic.ics`;
 
-   const text=(await fetchCalendarText(ics)).replace(/\r?\n[ \t]/g,"");
+   const text=(await fetchCalendarText(ics,forceRefresh)).replace(/\r?\n[ \t]/g,"");
 
    if(thisLoad===loadSequence){
     parseCalendarEvents(text,c,ms,me);
@@ -568,7 +576,6 @@ async function loadEvents(){
 
  if(thisLoad!==loadSequence)return;
 
- // Sort all-day events first, then timed events chronologically.
  const categoryPriority=[
   "學生生日","香港節慶假日","全教會","區",
   "學生聚會","學生周間聚會","學生同工"
@@ -652,7 +659,6 @@ function makeDot(d){
  wrap.className="marks";
 
  const dayEvents=(eventsByDate.get(key(d))||[]).filter(e=>enabled.has(e.calendarId));
-
  const seenBars=new Set();
 
  dayEvents.filter(e=>e.allDay).forEach(e=>{
@@ -675,7 +681,6 @@ function makeDot(d){
 
   timedCalendars.forEach(id=>{
    const c=calendars.find(x=>x.id===id);
-
    if(c){
     const dot=document.createElement("span");
     dot.className="mark";
@@ -709,7 +714,6 @@ function renderPortrait(){
  for(let d=1;d<=count;d++){
   let date=new Date(shown.getFullYear(),shown.getMonth(),d);
   let b=document.createElement("button");
-
   b.className="day";
 
   if(date.toDateString()===selected.toDateString())b.classList.add("selected");
@@ -893,7 +897,6 @@ function renderLandscape(){
   host.append(h);
  });
 
- // Only dates in the displayed month are shown.
  for(let i=0;i<first;i++){
   let blank=document.createElement("div");
   blank.className="lday";
@@ -930,7 +933,6 @@ function renderLandscape(){
 
    if(e.allDay){
     pill.style.background=e.color+"88";
-
     let time=document.createElement("span");
     time.className="etime";
     time.textContent="全日 ";
@@ -959,7 +961,6 @@ function renderLandscape(){
   host.append(cell);
  }
 
- // Pad the last row with blanks.
  while(host.children.length<(weeks+1)*7){
   let blank=document.createElement("div");
   blank.className="lday";
@@ -1005,12 +1006,29 @@ $("themeToggle").addEventListener("click",()=>{
  renderSelected();
 });
 
-$("eventClose").addEventListener("click",closeEventDetails);
+$("refreshButton").addEventListener("click",async()=>{
+ const b=$("refreshButton");
+ if(b.disabled)return;
 
+ b.disabled=true;
+ b.classList.add("spinning");
+ b.textContent="↻";
+ $("loadingText").textContent="正在更新…";
+
+ try{
+  await loadEvents(true);
+ }finally{
+  b.disabled=false;
+  b.classList.remove("spinning");
+  b.textContent="↻";
+  $("loadingText").textContent="載入活動…";
+ }
+});
+
+$("eventClose").addEventListener("click",closeEventDetails);
 $("eventModal").addEventListener("click",e=>{
  if(e.target===$("eventModal"))closeEventDetails();
 });
-
 document.addEventListener("keydown",e=>{
  if(e.key==="Escape")closeEventDetails();
 });
