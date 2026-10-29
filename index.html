@@ -67,7 +67,6 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
 .lday.today .ldaynum{display:inline-flex;background:var(--accent);color:white;border-radius:50%;width:20px;height:20px;align-items:center;justify-content:center}
 .levent{font-size:clamp(.55rem,.72vw,.76rem);line-height:1.18;border-radius:3px;padding:2px 3px;margin:1px 0;overflow:hidden;overflow-wrap:anywhere;word-break:break-word;color:#2f2b26;background:#eee}
 .levent .etime{font-weight:750;white-space:nowrap}
-.landscape-empty{font-size:.8rem;color:var(--muted);padding:10px}
 @media(max-width:600px) and (orientation:portrait){
  .app{padding:9px 7px}
  .brand{font-size:.6rem}
@@ -84,7 +83,8 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
  .check{font-size:.69rem;padding:5px 6px}
  .feed iframe{height:330px}
 }
-@media (orientation:landscape) and (max-height:650px){
+/* iPad and other wide screens in landscape orientation */
+@media (orientation:landscape) and (min-width:700px){
  .app{height:100dvh;max-width:none;padding:4px 7px;overflow:hidden}
  .top{height:25px;margin:0 0 3px}
  .brand{display:none}
@@ -114,7 +114,7 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
 <body>
 <div class="app">
 <header class="top">
- <div><div class="brand">THE CHURCH OF GOD IN HONG KONG</div><h1>北區學生月程</h1></div>
+ <div><div class="brand">CHURCH OF GOD IN HONG KONG</div><h1>北區學生月程</h1></div>
  <div class="clock"><div id="time">--:--:--</div><div id="dateLabel">香港時間</div></div>
 </header>
 <div class="monthbar">
@@ -136,7 +136,7 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
  <div class="events-head"><div><h2 id="eventTitle">當日活動</h2><div class="events-date" id="eventDate"></div></div><a class="google-link" id="openDay" href="https://calendar.google.com/" target="_blank" rel="noopener noreferrer">在 Google Calendar 開啟 ↗</a></div>
  <div class="calendar-checks" id="checks"></div><div class="feed" id="feed"></div>
 </section>
-<div class="notice">直向模式以圓點標示有活動的日期；橫向模式只顯示當月日期，並在日期格內顯示活動名稱及時間。活動圓點及活動資料依賴公開 Google Calendar 資料來源及外部轉接服務。</div>
+<div class="notice">直向模式以圓點標示有活動的日期；全日活動以短橫線標示。橫向模式只顯示當月日期，並在日期格內顯示活動名稱及時間。活動資料依賴公開 Google Calendar 及外部轉接服務。</div>
 </div>
 <script>
 const calendars=[
@@ -153,12 +153,12 @@ const pad=n=>String(n).padStart(2,"0");
 const key=d=>`${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
 const nowHK=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Hong_Kong"}));
 let today=nowHK(),shown=new Date(today.getFullYear(),today.getMonth(),1),selected=new Date(today.getFullYear(),today.getMonth(),today.getDate());
-let eventsByDate=new Map(),dotsByDate=new Map();
+let eventsByDate=new Map();
 const dayNames=["日","一","二","三","四","五","六"];
 function dateLabel(d){return new Intl.DateTimeFormat("zh-Hant-HK",{timeZone:"Asia/Hong_Kong",year:"numeric",month:"long",day:"numeric",weekday:"long"}).format(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),4)))}
 function updateClock(){let n=new Date();$("time").textContent=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Hong_Kong",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(n);$("dateLabel").textContent=new Intl.DateTimeFormat("zh-Hant-HK",{timeZone:"Asia/Hong_Kong",year:"numeric",month:"short",day:"numeric",weekday:"short"}).format(n)}
 function monthName(d){return new Intl.DateTimeFormat("zh-Hant-HK",{year:"numeric",month:"long"}).format(new Date(d.getFullYear(),d.getMonth(),15))}
-function addEvent(d,e){let k=key(d);if(!eventsByDate.has(k))eventsByDate.set(k,[]);eventsByDate.get(k).push(e);if(!dotsByDate.has(k))dotsByDate.set(k,new Set());dotsByDate.get(k).add(e.calendarId)}
+function addEvent(d,e){let k=key(d);if(!eventsByDate.has(k))eventsByDate.set(k,[]);eventsByDate.get(k).push(e)}
 function parseDate(v){let m=(v||"").match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})Z?)?/);if(!m)return null;return {date:new Date(+m[1],+m[2]-1,+m[3]),allDay:!m[4],hour:+(m[4]||0),minute:+(m[5]||0),utc:!!(m[4]&&v.endsWith("Z"))}}
 function formatTime(p){if(!p||p.allDay)return "全日";let h=p.hour;if(p.utc)h=(h+8)%24;return `${pad(h)}:${pad(p.minute)}`}
 function unescapeICS(s){return (s||"").replace(/\\n/gi," ").replace(/\\,/g,",").replace(/\\;/g,";").replace(/\\\\/g,"\\")}
@@ -167,13 +167,14 @@ function parseEventBlock(block,c,monthStart,monthEnd){
  for(const line of lines){const i=line.indexOf(":");if(i<0)continue;const k=line.slice(0,i).split(";")[0];if(["DTSTART","DTEND","SUMMARY","RRULE","EXDATE"].includes(k))props[k]=line.slice(i+1)}
  const start=parseDate(props.DTSTART);if(!start)return;
  const title=unescapeICS(props.SUMMARY)||"(沒有活動名稱)";
- const duration=props.DTEND?Math.max(0,Math.round((parseDate(props.DTEND)?.date-start.date)/86400000)):0;
+ const end=props.DTEND?parseDate(props.DTEND):null;
+ const duration=end?Math.max(0,Math.round((end.date-start.date)/86400000)):0;
  const rule=props.RRULE||"";
  const add=d=>{
   const span=start.allDay?Math.max(1,duration):1;
   for(let offset=0;offset<span;offset++){
    const day=new Date(d.getFullYear(),d.getMonth(),d.getDate()+offset);
-   if(day>=monthStart&&day<monthEnd){let e={title,time:formatTime(start),calendarId:c.id,color:c.color,allDay:start.allDay};addEvent(day,e)}
+   if(day>=monthStart&&day<monthEnd)addEvent(day,{title,time:formatTime(start),calendarId:c.id,color:c.color,allDay:start.allDay});
   }
  };
  if(!rule){add(start.date);return}
@@ -194,12 +195,12 @@ async function fetchCalendarText(ics){
  let lastError;
  for(const target of targets){
   try{const res=await fetch(target);if(!res.ok)throw new Error(`HTTP ${res.status}`);const text=await res.text();if(!text.includes("BEGIN:VCALENDAR"))throw new Error("Invalid calendar feed");return text}
-  catch(err){lastError=err;}
+  catch(err){lastError=err}
  }
  throw lastError||new Error("Calendar feed unavailable");
 }
 async function loadEvents(){
- eventsByDate=new Map();dotsByDate=new Map();
+ eventsByDate=new Map();
  const ms=new Date(shown.getFullYear(),shown.getMonth(),1),me=new Date(shown.getFullYear(),shown.getMonth()+1,1);
  await Promise.all(calendars.filter(c=>enabled.has(c.id)).map(async c=>{
   try{
@@ -227,9 +228,16 @@ function makeDot(d){
  return wrap;
 }
 function renderPortrait(){
- $("monthTitle").textContent=monthName(shown);let first=new Date(shown.getFullYear(),shown.getMonth(),1).getDay(),count=new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate(),host=$("days");host.innerHTML="";
+ $("monthTitle").textContent=monthName(shown);
+ let first=new Date(shown.getFullYear(),shown.getMonth(),1).getDay(),count=new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate(),host=$("days");host.innerHTML="";
  for(let i=0;i<first;i++){let b=document.createElement("div");b.className="day blank";host.append(b)}
- for(let d=1;d<=count;d++){let date=new Date(shown.getFullYear(),shown.getMonth(),d),b=document.createElement("button");b.className="day";if(date.toDateString()===selected.toDateString())b.classList.add("selected");if(date.toDateString()===today.toDateString())b.classList.add("today");let n=document.createElement("span");n.className="daynum";n.textContent=d;b.append(n,makeDot(date));b.addEventListener("click",()=>{selected=date;renderPortrait();renderSelected()});host.append(b)}
+ for(let d=1;d<=count;d++){
+  let date=new Date(shown.getFullYear(),shown.getMonth(),d),b=document.createElement("button");b.className="day";
+  if(date.toDateString()===selected.toDateString())b.classList.add("selected");
+  if(date.toDateString()===today.toDateString())b.classList.add("today");
+  let n=document.createElement("span");n.className="daynum";n.textContent=d;b.append(n,makeDot(date));
+  b.addEventListener("click",()=>{selected=date;renderPortrait();renderSelected()});host.append(b)
+ }
  renderSelected();
 }
 function renderSelected(){
@@ -253,7 +261,7 @@ function renderLandscape(){
   const ev=(eventsByDate.get(key(date))||[]).filter(e=>enabled.has(e.calendarId));
   ev.slice(0,5).forEach(e=>{let pill=document.createElement("div");pill.className="levent";pill.style.background=e.color+"55";pill.style.borderLeft="3px solid "+e.color;let time=document.createElement("span");time.className="etime";time.textContent=e.allDay?"全日":e.time+" ";let title=document.createElement("span");title.textContent=e.title;pill.append(time,title);cell.append(pill)});
   if(ev.length>5){let more=document.createElement("div");more.className="levent";more.textContent=`另有 ${ev.length-5} 項`;cell.append(more)}
-  host.append(cell);
+  host.append(cell)
  }
  while(host.children.length<(weeks+1)*7){let blank=document.createElement("div");blank.className="lday";blank.style.background="#fbf8f3";host.append(blank)}
 }
