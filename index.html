@@ -27,17 +27,41 @@ button{touch-action:manipulation}
 .loading-spinner{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.loading-spinner{animation-duration:2s}}
-body[data-theme="night"]{--bg:#17191f;--paper:#22252d;--ink:#eee8df;--muted:#b3a89a;--line:#41434b;--accent:#c49a70;background:var(--bg);color:var(--ink)}
-body[data-theme="night"] .weekdays,body[data-theme="night"] .lwday{background:#30313a;color:#d6c7b6}
-body[data-theme="night"] .day.blank,body[data-theme="night"] .lday[style*="background"]{background:#1d2027!important}
+
+body[data-theme="night"]{--bg:#17191f;--paper:#22252d;--ink:#f2f2f5;--muted:#c0c2cc;--line:#414550;--accent:#d5a979;background:var(--bg);color:var(--ink)}
+body[data-theme="night"] .landscape-grid{background:#22252d;border-color:#414550}
+body[data-theme="night"] .lwday{background:#30333d;color:#f0e6da;border-color:#484b56}
+body[data-theme="night"] .lday{background:#22252d!important;border-color:#414550}
+body[data-theme="night"] .ldaynum{color:#f2f2f5}
+body[data-theme="night"] .lday.today .ldaynum{background:#d5a979;color:#211b15}
+body[data-theme="night"] .levent.timed-event{color:#f2f2f5;background:transparent}
+body[data-theme="night"] .levent .etime{color:#fff}
+body[data-theme="night"] .levent.allday-event{color:#211b15;font-weight:700}
+body[data-theme="night"] .check{background:#2b2e37;border-color:#505360;color:#f2f2f5}
+body[data-theme="night"] .check input{accent-color:#d5a979}
+body[data-theme="night"] .theme-toggle,body[data-theme="night"] .nav button{background:#292c35;border-color:#505360;color:#f2f2f5}
+body[data-theme="night"] .nav .todaybtn{background:#d5a979!important;color:#211b15!important}
+body[data-theme="night"] h1,body[data-theme="night"] .month-title,body[data-theme="night"] .landscape-title{color:#f2f2f5}
+body[data-theme="night"] .brand{color:#e4bd94}
+body[data-theme="night"] .clock,body[data-theme="night"] .events-date,body[data-theme="night"] .notice{color:#c0c2cc}
+body[data-theme="night"] .cal-shell,body[data-theme="night"] .day-events{background:#22252d;border-color:#414550;box-shadow:none}
+body[data-theme="night"] .events-head,body[data-theme="night"] .calendar-checks{border-color:#414550}
+body[data-theme="night"] .day-event-item{background:#292c35;border-color:#505360;color:#f2f2f5}
+body[data-theme="night"] .day-event-meta,body[data-theme="night"] .event-detail-label{color:#c0c2cc}
+body[data-theme="night"] .event-dialog{background:#22252d;border-color:#414550;color:#f2f2f5}
+body[data-theme="night"] .event-close{background:#292c35;border-color:#505360;color:#f2f2f5}
+body[data-theme="night"] .feed iframe{background:#17191f}
+body[data-theme="night"] .lunar-info{color:#c0c2cc;font-weight:400}
+body[data-theme="night"] .lunar-festival{color:#e7bd92;font-weight:400}
+body[data-theme="night"] .weekdays{background:#30333d;border-color:#414550}
+body[data-theme="night"] .weekdays div{color:#f0e6da}
+body[data-theme="night"] .day{color:#f2f2f5;border-color:#414550}
+body[data-theme="night"] .day.blank{background:#1d2027}
 body[data-theme="night"] .day.selected{background:#40352c}
-body[data-theme="night"] .check{background:#2c2d35;border-color:#454650;color:var(--ink)}
-body[data-theme="night"] .legend-item{color:#d4c9bc}
-body[data-theme="night"] .levent{color:#171717}
-body[data-theme="night"] .cal-shell,body[data-theme="night"] .day-events{box-shadow:none}
-body[data-theme="night"] .events-head,body[data-theme="night"] .calendar-checks{border-color:var(--line)}
-body[data-theme="night"] .nav button{background:var(--paper);color:var(--ink);border-color:var(--line)}
-body[data-theme="night"] .nav .todaybtn{background:var(--accent)!important;color:#171717!important}
+body[data-theme="night"] .daynum{color:#f2f2f5}
+body[data-theme="night"] .day.today .daynum{background:#d5a979;color:#211b15}
+body[data-theme="night"] .legend-item{color:#e0dce5}
+
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
 .brand{font-size:.7rem;letter-spacing:.1em;color:var(--accent);font-weight:800}
 h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
@@ -59,6 +83,12 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
 .day.selected{background:#f3e4d3;box-shadow:inset 0 0 0 2px #a98764}
 .day.today .daynum{background:var(--accent);color:white}
 .daynum{width:25px;height:25px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:.9rem;font-weight:650;flex-shrink:0}
+.lunar-info{display:block;max-width:100%;font-size:.63rem;font-style:italic;font-weight:400;line-height:1.2;color:var(--muted);text-align:center;overflow-wrap:anywhere}
+.lunar-festival{display:block;font-size:.61rem;font-style:italic;font-weight:400;line-height:1.15;color:var(--accent);text-align:center;overflow-wrap:anywhere}
+.lunar-date-row{display:flex;align-items:center;gap:4px;min-width:0;flex-shrink:0}
+.lunar-date-row .lunar-info,.lunar-date-row .lunar-festival{text-align:left;white-space:normal}
+.lunar-date-row .lunar-info{font-size:clamp(.58rem,.72vw,.72rem)}
+.lunar-date-row .lunar-festival{font-size:clamp(.57rem,.68vw,.68rem)}
 .marks{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;width:100%;min-height:7px;overflow:hidden}
 .dot-row{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;min-height:5px;width:100%}
 .mark{display:inline-block;width:5px;height:5px;border-radius:50%;flex-shrink:0}
@@ -94,9 +124,6 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
 .event-detail-label{width:64px;min-width:64px;color:var(--muted);font-size:.85rem}
 .event-detail-value{overflow-wrap:anywhere;white-space:pre-wrap}
 .event-detail-color{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
-body[data-theme="night"] .day-event-item{background:var(--paper);color:var(--ink)}
-body[data-theme="night"] .event-dialog{background:var(--paper);color:var(--ink)}
-body[data-theme="night"] .feed iframe{background:#17191f}
 .notice{font-size:.76rem;line-height:1.5;color:var(--muted);padding:12px 3px}
 .landscape-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
 .landscape-nav{margin-left:auto;justify-content:flex-end}
@@ -106,6 +133,10 @@ body[data-theme="night"] .feed iframe{background:#17191f}
 .lday{min-width:0;min-height:0;padding:3px;border-right:1px solid #eee4d8;border-bottom:1px solid #eee4d8;overflow:hidden;display:flex;flex-direction:column}
 .lday:nth-child(7n){border-right:0}
 .ldaynum{font-size:clamp(.68rem,.9vw,.9rem);font-weight:750;margin-bottom:2px}
+.lunar-date-row{display:flex;align-items:center;gap:5px;min-width:0;flex-shrink:0}
+.lunar-date-row .lunar-info,.lunar-date-row .lunar-festival{font-size:clamp(.58rem,.72vw,.75rem);font-style:italic;font-weight:400;line-height:1.15;text-align:left;overflow-wrap:anywhere}
+.lunar-date-row .lunar-info{color:var(--muted)}
+.lunar-date-row .lunar-festival{color:var(--accent)}
 .lday.today .ldaynum{display:inline-flex;background:var(--accent);color:white;border-radius:50%;width:20px;height:20px;align-items:center;justify-content:center}
 .levent{font-size:clamp(.68rem,.82vw,.88rem);line-height:1.22;border-radius:3px;padding:3px 4px;margin:1px 0;overflow-wrap:anywhere;word-break:break-word;color:var(--ink);background:transparent;flex-shrink:0}
 .levent.allday-event{color:#2f2b26;background:var(--event-color);border-left:0!important;border-radius:3px;padding:3px 4px}
@@ -113,15 +144,11 @@ body[data-theme="night"] .feed iframe{background:#17191f}
 .event-dot{display:inline-block;width:.9em;height:.9em;min-width:.9em;border-radius:50%;margin-top:.12em;flex-shrink:0}
 .levent .etime{font-weight:750;white-space:nowrap}
 .landscape-empty{font-size:.8rem;color:var(--muted);padding:10px}
+.event-list{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;flex:1}
 .landscape-checks{padding:4px 0;gap:4px;border:0;overflow-x:auto;flex-wrap:nowrap;white-space:nowrap}
 .landscape-checks .check{flex-shrink:0;font-size:.78rem;padding:4px 7px}
-.event-list{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;flex:1}
 
-/* 直向模式不顯示底部 Google 日曆嵌入視窗 */
-@media (orientation:portrait){
- .feed{display:none!important}
-}
-
+@media(orientation:portrait){.feed{display:none!important}}
 @media(max-width:600px) and (orientation:portrait){
  .app{padding:9px 7px}
  .brand{font-size:.6rem}
@@ -132,14 +159,15 @@ body[data-theme="night"] .feed iframe{background:#17191f}
  .weekdays div{font-size:.7rem;padding:6px 0}
  .day{min-height:clamp(44px,12vw,62px);gap:2px}
  .daynum{width:23px;height:23px;font-size:.82rem}
+ .lunar-info{font-size:.56rem}
+ .lunar-festival{font-size:.55rem}
  .legend{gap:6px 9px;padding:8px}
  .legend-item{font-size:.7rem}
  .calendar-checks{padding:8px;gap:5px}
  .check{font-size:.69rem;padding:5px 6px}
  .feed iframe{height:330px}
 }
-
-@media (orientation:landscape){
+@media(orientation:landscape){
  .app{height:100dvh;max-width:none;padding:5px 8px;overflow:hidden}
  .top{height:34px;margin:0 0 3px}
  .brand{display:block;font-size:.55rem;letter-spacing:.06em;line-height:1.1;margin-bottom:2px}
@@ -158,11 +186,14 @@ body[data-theme="night"] .feed iframe{background:#17191f}
  .lday{padding:3px}
  .ldaynum{font-size:clamp(.78rem,1.8vh,1rem);margin-bottom:2px;flex-shrink:0}
  .lday.today .ldaynum{width:22px;height:22px}
+ .lunar-date-row{gap:4px}
+ .lunar-date-row .lunar-info{font-size:clamp(.58rem,1.2vh,.72rem)}
+ .lunar-date-row .lunar-festival{font-size:clamp(.56rem,1.15vh,.7rem)}
  .levent{font-size:clamp(.68rem,1.55vh,.9rem);line-height:1.2;padding:3px 4px;margin:1px 0}
  .levent.timed-event{padding:1px 0;gap:3px}
  .event-dot{width:5px;height:5px;min-width:5px}
 }
-@media (orientation:landscape) and (max-height:430px){
+@media(orientation:landscape) and (max-height:430px){
  .landscape-checks{height:28px}
  .landscape-grid{height:calc(100% - 57px)}
  .landscape-checks .check{font-size:.65rem;padding:3px 5px}
@@ -271,14 +302,64 @@ let selected=new Date(today.getFullYear(),today.getMonth(),today.getDate());
 let eventsByDate=new Map(),dotsByDate=new Map();
 let loadSequence=0;
 
+const dayNames=["日","一","二","三","四","五","六"];
+
+/* 使用瀏覽器內置的中國農曆曆法，不需 API 或外部程式庫。 */
+const lunarFormatter=new Intl.DateTimeFormat("zh-Hant-u-ca-chinese",{
+ month:"long",
+ day:"numeric",
+ timeZone:"Asia/Hong_Kong"
+});
+
+const lunarDayNames=[
+ "",
+ "初一","初二","初三","初四","初五","初六","初七","初八","初九","初十",
+ "十一","十二","十三","十四","十五","十六","十七","十八","十九","二十",
+ "廿一","廿二","廿三","廿四","廿五","廿六","廿七","廿八","廿九","三十"
+];
+
+const lunarMonthNames={
+ "正月":1,"一月":1,"二月":2,"三月":3,"四月":4,
+ "五月":5,"六月":6,"七月":7,"八月":8,"九月":9,
+ "十月":10,"冬月":11,"十一月":11,"腊月":12,"臘月":12,"十二月":12
+};
+
+const lunarFestivals={
+ "1-1":"農曆新年",
+ "1-15":"元宵節",
+ "5-5":"端午節",
+ "7-7":"七夕",
+ "7-15":"中元節",
+ "8-15":"中秋節",
+ "9-9":"重陽節",
+ "12-8":"臘八節"
+};
+
+function getLunarInfo(date){
+ const localDate=new Date(date.getFullYear(),date.getMonth(),date.getDate(),12);
+ const parts=lunarFormatter.formatToParts(localDate);
+ const monthText=parts.find(p=>p.type==="month")?.value||"";
+ const normalizedMonth=monthText.replace(/^閏/,"").replace(/^闰/,"");
+ const dayNumber=Number(parts.find(p=>p.type==="day")?.value||0);
+ const monthNumber=lunarMonthNames[normalizedMonth]||0;
+ const dayText=lunarDayNames[dayNumber]||String(dayNumber);
+ const festival=lunarFestivals[`${monthNumber}-${dayNumber}`]||"";
+
+ return {
+  monthText,
+  dayNumber,
+  text:`${monthText}${dayText}`,
+  dayText,
+  festival
+ };
+}
+
 function setLoading(active){
  const el=$("loadingStatus");
  if(!el)return;
  el.classList.toggle("active",active);
  el.setAttribute("aria-hidden",String(!active));
 }
-
-const dayNames=["日","一","二","三","四","五","六"];
 
 function dateLabel(d){
  return new Intl.DateTimeFormat("zh-Hant-HK",{
@@ -397,88 +478,136 @@ function addCalendarEvent(c,event,d,monthStart,monthEnd){
  }
 }
 
+/* 支援每日、每週、每月及每年重複活動。 */
 function expandCalendarEvent(c,event,monthStart,monthEnd,excludedDates){
  if(!event.start||event.status==="CANCELLED")return;
+
  const startDate=new Date(event.start.date.getFullYear(),event.start.date.getMonth(),event.start.date.getDate());
  const add=d=>{
   const day=new Date(d.getFullYear(),d.getMonth(),d.getDate());
   if(day<startDate||day<monthStart||day>=monthEnd)return;
   if(!excludedDates.has(key(day)))addCalendarEvent(c,event,day,monthStart,monthEnd);
  };
+
  if(!event.rule){add(startDate);return;}
+
  const parts={};
  event.rule.split(";").forEach(part=>{
   const i=part.indexOf("=");
   if(i>0)parts[part.slice(0,i).toUpperCase()]=part.slice(i+1).toUpperCase();
  });
+
  const freq=parts.FREQ;
  const interval=Math.max(1,parseInt(parts.INTERVAL||"1",10)||1);
  const until=parts.UNTIL?parseDate(parts.UNTIL)?.date:null;
  const stop=until&&until<monthEnd
   ?new Date(until.getFullYear(),until.getMonth(),until.getDate()+1)
   :monthEnd;
+
  const codes=["SU","MO","TU","WE","TH","FR","SA"];
  const byday=(parts.BYDAY||"").split(",").filter(Boolean).map(token=>({
-  token, day:token.slice(-2), ordinal:token.length>2?parseInt(token.slice(0,-2),10):null
+  token,
+  day:token.slice(-2),
+  ordinal:token.length>2?parseInt(token.slice(0,-2),10):null
  }));
  const bymonthday=(parts.BYMONTHDAY||"").split(",").filter(Boolean).map(v=>parseInt(v,10)).filter(Number.isFinite);
  const bysetpos=(parts.BYSETPOS||"").split(",").filter(Boolean).map(v=>parseInt(v,10)).filter(Number.isFinite);
+
  const sameDay=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
  const daysInMonth=(y,m)=>new Date(y,m+1,0).getDate();
+
  const nthWeekday=(y,m,weekday,n)=>{
-  if(n>0){const first=new Date(y,m,1).getDay();return 1+((weekday-first+7)%7)+(n-1)*7;}
+  if(n>0){
+   const first=new Date(y,m,1).getDay();
+   return 1+((weekday-first+7)%7)+(n-1)*7;
+  }
   const last=daysInMonth(y,m),lastWeekday=new Date(y,m,last).getDay();
   return last-((lastWeekday-weekday+7)%7)+((n+1)*7);
  };
+
  const applySetPos=items=>{
   if(!bysetpos.length)return items;
   const chosen=[];
-  bysetpos.forEach(pos=>{const i=pos>0?pos-1:items.length+pos;if(i>=0&&i<items.length&&!chosen.some(d=>sameDay(d,items[i])))chosen.push(items[i]);});
+  bysetpos.forEach(pos=>{
+   const i=pos>0?pos-1:items.length+pos;
+   if(i>=0&&i<items.length&&!chosen.some(d=>sameDay(d,items[i])))chosen.push(items[i]);
+  });
   return chosen;
  };
+
  if(freq==="DAILY"){
   const first=new Date(Math.max(startDate.getTime(),monthStart.getTime()));
   for(let d=new Date(first);d<stop;d.setDate(d.getDate()+1)){
    const n=Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate())-startDate)/86400000);
    if(n>=0&&n%interval===0)add(new Date(d));
   }
+
  }else if(freq==="WEEKLY"){
   const first=new Date(Math.max(startDate.getTime(),monthStart.getTime()));
   const startWeek=new Date(startDate.getFullYear(),startDate.getMonth(),startDate.getDate()-startDate.getDay());
+
   for(let d=new Date(first);d<stop;d.setDate(d.getDate()+1)){
    const weekStart=new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay());
    const week=Math.floor((weekStart-startWeek)/604800000);
    const weekdays=byday.length?byday.map(x=>x.day):[codes[startDate.getDay()]];
    if(week>=0&&week%interval===0&&weekdays.includes(codes[d.getDay()]))add(new Date(d));
   }
+
  }else if(freq==="MONTHLY"){
-  for(let y=Math.max(startDate.getFullYear(),monthStart.getFullYear()),m=(y===startDate.getFullYear()&&y===monthStart.getFullYear()?Math.max(startDate.getMonth(),monthStart.getMonth()):(y===startDate.getFullYear()?startDate.getMonth():monthStart.getMonth()));y<stop.getFullYear()||(y===stop.getFullYear()&&m<=stop.getMonth());){
+  let y=Math.max(startDate.getFullYear(),monthStart.getFullYear());
+  let m=y===startDate.getFullYear()&&y===monthStart.getFullYear()
+   ?Math.max(startDate.getMonth(),monthStart.getMonth())
+   :y===startDate.getFullYear()?startDate.getMonth():monthStart.getMonth();
+
+  while(y<stop.getFullYear()||(y===stop.getFullYear()&&m<=stop.getMonth())){
    const diff=(y-startDate.getFullYear())*12+(m-startDate.getMonth());
+
    if(diff>=0&&diff%interval===0){
-    const total=daysInMonth(y,m);let candidates=[];
+    const total=daysInMonth(y,m);
+    let candidates=[];
+
     if(bymonthday.length){
-     bymonthday.forEach(n=>{const day=n>0?n:total+n+1;if(day>=1&&day<=total)candidates.push(new Date(y,m,day));});
+     bymonthday.forEach(n=>{
+      const day=n>0?n:total+n+1;
+      if(day>=1&&day<=total)candidates.push(new Date(y,m,day));
+     });
     }else if(byday.length){
      byday.forEach(rule=>{
-      const weekday=codes.indexOf(rule.day);if(weekday<0)return;
-      if(rule.ordinal){const day=nthWeekday(y,m,weekday,rule.ordinal);if(day>=1&&day<=total)candidates.push(new Date(y,m,day));}
-      else for(let day=1;day<=total;day++){const d=new Date(y,m,day);if(d.getDay()===weekday)candidates.push(d);}
+      const weekday=codes.indexOf(rule.day);
+      if(weekday<0)return;
+      if(rule.ordinal){
+       const day=nthWeekday(y,m,weekday,rule.ordinal);
+       if(day>=1&&day<=total)candidates.push(new Date(y,m,day));
+      }else{
+       for(let day=1;day<=total;day++){
+        const d=new Date(y,m,day);
+        if(d.getDay()===weekday)candidates.push(d);
+       }
+      }
      });
     }else{
-     const day=startDate.getDate();if(day<=total)candidates.push(new Date(y,m,day));
+     const day=startDate.getDate();
+     if(day<=total)candidates.push(new Date(y,m,day));
     }
+
     candidates.sort((a,b)=>a-b);
     candidates=applySetPos(candidates);
     candidates.forEach(add);
    }
-   m++;if(m>11){m=0;y++;}
+
+   m++;
+   if(m>11){m=0;y++;}
   }
+
  }else if(freq==="YEARLY"){
   for(let y=Math.max(startDate.getFullYear(),monthStart.getFullYear());y<=stop.getFullYear();y++){
-   const diff=y-startDate.getFullYear();if(diff<0||diff%interval!==0)continue;
+   const diff=y-startDate.getFullYear();
+   if(diff<0||diff%interval!==0)continue;
    const m=parts.BYMONTH?Math.max(1,parseInt(parts.BYMONTH,10))-1:startDate.getMonth();
-   const day=startDate.getDate();if(day<=daysInMonth(y,m))add(new Date(y,m,day));
+   const day=startDate.getDate();
+   if(day<=daysInMonth(y,m))add(new Date(y,m,day));
   }
+
  }else{
   add(startDate);
  }
@@ -506,14 +635,14 @@ function parseCalendarEvents(text,c,monthStart,monthEnd){
 }
 
 async function fetchCalendarText(calendar,forceRefresh=false){
- // GitHub Actions 定期下載公開 ICS 訂閱，並存入 /data。
- // 網站從自己的 /data 資料夾讀取；本機 file:// 開啟時讀取 GitHub Pages 上的快照。
  const base=location.protocol==="file:"
-  ? "https://tawuhac-oss.github.io/church-calendar/data/"
-  : new URL("data/",location.href).href;
+  ?"https://tawuhac-oss.github.io/church-calendar/data/"
+  :new URL("data/",location.href).href;
+
  const url=base+calendar.file+(forceRefresh?"?refresh="+Date.now():"");
  const response=await fetch(url,{cache:forceRefresh?"no-store":"default"});
  if(!response.ok)throw new Error(`Calendar snapshot HTTP ${response.status}`);
+
  const text=await response.text();
  if(!text.includes("BEGIN:VCALENDAR"))throw new Error("Invalid calendar snapshot");
  return text;
@@ -543,7 +672,8 @@ async function loadEvents(forceRefresh=false){
 
  const categoryPriority=["學生生日","香港節慶假日","全教會","區","學生聚會","學生周間聚會","學生同工"];
  const priorityById=new Map(calendars.map(c=>[
-  c.id,categoryPriority.indexOf(c.name)===-1?categoryPriority.length:categoryPriority.indexOf(c.name)
+  c.id,
+  categoryPriority.indexOf(c.name)===-1?categoryPriority.length:categoryPriority.indexOf(c.name)
  ]));
 
  for(const arr of eventsByDate.values()){
@@ -569,13 +699,14 @@ async function loadEvents(forceRefresh=false){
    if(thisLoad===loadSequence)loadingText.textContent="載入活動…";
   },6000);
  }
+
  setLoading(false);
 }
 
 function renderLegend(){
  $("legend").innerHTML="";
  calendars.forEach(c=>{
-  let el=document.createElement("div");
+  const el=document.createElement("div");
   el.className="legend-item";
   el.innerHTML=`<span class="mark" style="background:${c.color}"></span><span>${c.name}</span>`;
   $("legend").append(el);
@@ -585,12 +716,15 @@ function renderLegend(){
   const host=$(containerId);
   if(!host)return;
   host.innerHTML="";
+
   calendars.forEach(c=>{
-   let label=document.createElement("label");
+   const label=document.createElement("label");
    label.className="check";
-   let input=document.createElement("input");
+
+   const input=document.createElement("input");
    input.type="checkbox";
    input.checked=enabled.has(c.id);
+
    input.addEventListener("change",()=>{
     input.checked?enabled.add(c.id):enabled.delete(c.id);
     renderLegend();
@@ -599,20 +733,25 @@ function renderLegend(){
     renderSelected();
     loadEvents();
    });
-   let dot=document.createElement("span");
+
+   const dot=document.createElement("span");
    dot.className="mark";
    dot.style.background=c.color;
-   let name=document.createElement("span");
+
+   const name=document.createElement("span");
    name.textContent=c.name;
+
    label.append(input,dot,name);
    host.append(label);
   });
  });
+
 }
 
 function makeDot(d){
  const wrap=document.createElement("span");
  wrap.className="marks";
+
  const dayEvents=(eventsByDate.get(key(d))||[]).filter(e=>enabled.has(e.calendarId));
  const seenBars=new Set();
 
@@ -620,6 +759,7 @@ function makeDot(d){
   const unique=e.calendarId+"|"+e.title;
   if(seenBars.has(unique))return;
   seenBars.add(unique);
+
   const bar=document.createElement("span");
   bar.className="all-day-mark";
   bar.style.background=e.color;
@@ -631,6 +771,7 @@ function makeDot(d){
  if(timedCalendars.size){
   const row=document.createElement("span");
   row.className="dot-row";
+
   timedCalendars.forEach(id=>{
    const c=calendars.find(x=>x.id===id);
    if(c){
@@ -641,43 +782,59 @@ function makeDot(d){
     row.append(dot);
    }
   });
+
   wrap.append(row);
  }
+
  return wrap;
+}
+
+function makeLunarLabel(date,vertical=false){
+ const lunar=getLunarInfo(date);
+ const label=document.createElement("span");
+ label.className=lunar.festival?"lunar-festival":"lunar-info";
+ label.textContent=lunar.festival?`${lunar.text} · ${lunar.festival}`:lunar.text;
+ label.title=lunar.festival?`${lunar.text}，${lunar.festival}`:`農曆${lunar.text}`;
+ return label;
 }
 
 function renderPortrait(){
  $("monthTitle").textContent=monthName(shown);
+
  const first=new Date(shown.getFullYear(),shown.getMonth(),1).getDay();
  const count=new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate();
  const host=$("days");
  host.innerHTML="";
 
  for(let i=0;i<first;i++){
-  let b=document.createElement("div");
+  const b=document.createElement("div");
   b.className="day blank";
   host.append(b);
  }
 
  for(let d=1;d<=count;d++){
-  let date=new Date(shown.getFullYear(),shown.getMonth(),d);
-  let b=document.createElement("button");
+  const date=new Date(shown.getFullYear(),shown.getMonth(),d);
+  const b=document.createElement("button");
   b.className="day";
+
   if(date.toDateString()===selected.toDateString())b.classList.add("selected");
   if(date.toDateString()===today.toDateString())b.classList.add("today");
 
-  let n=document.createElement("span");
+  const n=document.createElement("span");
   n.className="daynum";
   n.textContent=d;
-  b.append(n,makeDot(date));
+
+  b.append(n,makeLunarLabel(date,true),makeDot(date));
 
   b.addEventListener("click",()=>{
    selected=date;
    renderPortrait();
    renderSelected();
   });
+
   host.append(b);
  }
+
  renderSelected();
 }
 
@@ -689,6 +846,7 @@ function showEventDetails(e,date){
 
  const rows=[
   ["日期",dateLabel(date||e.date||selected)],
+  ["農曆",getLunarInfo(date||e.date||selected).text],
   ["時間",e.allDay?"全日":`${e.time||"未提供"}${e.endTime?" – "+e.endTime:""}`],
   ["日曆",e.calendarName||(calendars.find(c=>c.id===e.calendarId)?.name||"")],
   ["地點",e.location||""],
@@ -699,12 +857,13 @@ function showEventDetails(e,date){
   if(!value)return;
   const row=document.createElement("div");
   row.className="event-detail-row";
+
   const lab=document.createElement("div");
   lab.className="event-detail-label";
   lab.textContent=label;
+
   const val=document.createElement("div");
   val.className="event-detail-value";
-
   if(label==="日曆"){
    const dot=document.createElement("span");
    dot.className="event-detail-color";
@@ -713,6 +872,7 @@ function showEventDetails(e,date){
   }else{
    val.textContent=value;
   }
+
   row.append(lab,val);
   body.append(row);
  });
@@ -726,6 +886,7 @@ function showEventDetails(e,date){
   note.append(value);
   body.append(note);
  }
+
  modal.classList.add("open");
 }
 
@@ -796,6 +957,7 @@ function renderSelected(){
 
  const feed=$("feed");
  feed.innerHTML="";
+
  if(!enabled.size){
   feed.innerHTML='<div class="empty-day">請先選擇至少一個日曆。</div>';
   return;
@@ -819,36 +981,42 @@ function renderLandscape(){
  host.style.setProperty("--weeks",weeks);
 
  dayNames.forEach(n=>{
-  let h=document.createElement("div");
+  const h=document.createElement("div");
   h.className="lwday";
   h.textContent=n;
   host.append(h);
  });
 
  for(let i=0;i<first;i++){
-  let blank=document.createElement("div");
+  const blank=document.createElement("div");
   blank.className="lday";
   blank.style.background="#fbf8f3";
   host.append(blank);
  }
 
  for(let d=1;d<=count;d++){
-  let date=new Date(shown.getFullYear(),shown.getMonth(),d);
-  let cell=document.createElement("div");
+  const date=new Date(shown.getFullYear(),shown.getMonth(),d);
+  const cell=document.createElement("div");
   cell.className="lday";
+
   if(date.toDateString()===today.toDateString())cell.classList.add("today");
 
-  let num=document.createElement("div");
+  const dateRow=document.createElement("div");
+  dateRow.className="lunar-date-row";
+
+  const num=document.createElement("div");
   num.className="ldaynum";
   num.textContent=d;
-  cell.append(num);
+
+  dateRow.append(num,makeLunarLabel(date));
+  cell.append(dateRow);
 
   const ev=(eventsByDate.get(key(date))||[]).filter(e=>enabled.has(e.calendarId));
   const list=document.createElement("div");
   list.className="event-list";
 
   ev.forEach(e=>{
-   let pill=document.createElement("button");
+   const pill=document.createElement("button");
    pill.type="button";
    pill.className="levent "+(e.allDay?"allday-event":"timed-event");
    pill.style.setProperty("--event-color",e.color+"88");
@@ -860,23 +1028,23 @@ function renderLandscape(){
 
    if(e.allDay){
     pill.style.background=e.color+"88";
-    let time=document.createElement("span");
+    const time=document.createElement("span");
     time.className="etime";
     time.textContent="全日 ";
     pill.append(time);
    }else{
-    let dot=document.createElement("span");
+    const dot=document.createElement("span");
     dot.className="event-dot";
     dot.style.background=e.color;
     pill.append(dot);
 
-    let time=document.createElement("span");
+    const time=document.createElement("span");
     time.className="etime";
     time.textContent=e.time+" ";
     pill.append(time);
    }
 
-   let title=document.createElement("span");
+   const title=document.createElement("span");
    title.textContent=e.title;
    pill.append(title);
    pill.addEventListener("click",()=>showEventDetails(e,date));
@@ -888,7 +1056,7 @@ function renderLandscape(){
  }
 
  while(host.children.length<(weeks+1)*7){
-  let blank=document.createElement("div");
+  const blank=document.createElement("div");
   blank.className="lday";
   blank.style.background="#fbf8f3";
   host.append(blank);
@@ -918,7 +1086,7 @@ $("today").addEventListener("click",goToday);
 $("lprev").addEventListener("click",()=>shiftMonth(-1));
 $("lnext").addEventListener("click",()=>shiftMonth(1));
 $("ltoday").addEventListener("click",goToday);
-$("themeToggle").addEventListener("click",()=>{toggleTheme();renderSelected()});
+$("themeToggle").addEventListener("click",()=>{toggleTheme();renderSelected();});
 
 $("refreshButton").addEventListener("click",async()=>{
  const b=$("refreshButton");
@@ -927,6 +1095,7 @@ $("refreshButton").addEventListener("click",async()=>{
  b.classList.add("spinning");
  b.textContent="↻";
  $("loadingText").textContent="正在更新…";
+
  try{
   await loadEvents(true);
  }finally{
