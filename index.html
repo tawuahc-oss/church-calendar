@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+<meta name="theme-color" content="#f7f1e8">
+<link rel="icon" type="image/png" href="./calendar-thumbnail.png">
+<link rel="apple-touch-icon" href="./calendar-thumbnail.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="教會日曆">
+<meta property="og:description" content="聚會、同工安排、生日及全教會活動日曆。">
+<meta property="og:image" content="./calendar-thumbnail.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="教會日曆">
+<meta name="twitter:description" content="聚會、同工安排、生日及全教會活動日曆。">
+<meta name="twitter:image" content="./calendar-thumbnail.png">
+<title>教會日曆</title>
+<style>
+:root{
+  --bg:#f7f1e8;--paper:#fffdf9;--ink:#3e342b;--muted:#887b6d;--line:#e5dacb;
+  --accent:#87684a;--accent-soft:#eee2d2;
+  --all:#7CB342;--district:#B39DDB;--staff:#EF746C;--weekday:#FFBF16;--birthday:#FF9800;--student:#03A9F4;
+}
+*{box-sizing:border-box}
+html{min-width:0;width:100%;min-height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;width:100%;min-width:0;min-height:100dvh;overflow-x:hidden;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input{font:inherit}
+button{touch-action:manipulation}
+.app{width:100%;max-width:1440px;min-width:0;min-height:100dvh;margin:0 auto;padding:clamp(10px,2.4vw,28px);padding-left:max(clamp(10px,2.4vw,28px),env(safe-area-inset-left));padding-right:max(clamp(10px,2.4vw,28px),env(safe-area-inset-right));padding-bottom:max(18px,env(safe-area-inset-bottom))}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;margin-bottom:clamp(8px,1.5vh,16px)}
+.top>div:first-child{min-width:0}
+.brand{font-size:clamp(.65rem,1.4vw,.78rem);letter-spacing:.12em;color:var(--accent);font-weight:800}
+h1{font-size:clamp(1.25rem,4vw,2.25rem);margin:4px 0 0;letter-spacing:-.035em;overflow-wrap:anywhere}
+.clock{text-align:right;color:var(--muted);font-size:clamp(.68rem,1.5vw,.8rem);white-space:nowrap;flex-shrink:0}
+#time{font-size:clamp(.9rem,2.3vw,1.1rem);color:var(--ink);font-weight:750;font-variant-numeric:tabular-nums}
+.monthbar{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;margin:clamp(8px,1.5vh,14px) 0}
+.month-title{min-width:0;font-size:clamp(1.35rem,5vw,2.35rem);font-weight:800;letter-spacing:-.04em;overflow-wrap:anywhere}
+.nav{display:flex;gap:5px;flex-shrink:0}
+.nav button{min-width:40px;min-height:40px;border:1px solid var(--line);background:var(--paper);color:var(--accent);border-radius:12px;padding:8px 11px;font-weight:700}
+.todaybtn{background:var(--accent)!important;color:white!important;border-color:var(--accent)!important}
+.cal-shell{width:100%;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:clamp(10px,2vw,18px);overflow:hidden;box-shadow:0 8px 26px #5d47210d}
+.weekdays,.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));width:100%;min-width:0}
+.weekdays{background:#f0e6d9;border-bottom:1px solid var(--line)}
+.weekdays div{text-align:center;min-width:0;padding:clamp(6px,1.2vw,10px) 0;font-size:clamp(.65rem,1.5vw,.77rem);color:var(--muted);font-weight:800}
+.day{position:relative;min-width:0;min-height:clamp(48px,9vw,112px);padding:clamp(3px,.8vw,7px) 1px;border:0;border-right:1px solid #f0e7dc;border-bottom:1px solid #f0e7dc;background:transparent;color:var(--ink);text-align:left;display:flex;flex-direction:column;align-items:center;gap:clamp(2px,.6vw,5px);overflow:hidden}
+.day:nth-child(7n){border-right:0}
+.day.blank{pointer-events:none;background:#fbf8f3}
+.day.selected{background:#f3e4d3;box-shadow:inset 0 0 0 2px #a98764}
+.day.today .daynum{background:#87684a;color:white}
+.day.selected:not(.today) .daynum{color:#6d4e31}
+.daynum{display:flex;align-items:center;justify-content:center;width:clamp(24px,4vw,30px);height:clamp(24px,4vw,30px);flex:0 0 auto;border-radius:50%;font-size:clamp(.75rem,2vw,1rem);font-weight:650}
+.marks{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;max-width:100%;min-height:7px}
+.mark{width:clamp(5px,1.1vw,7px);height:clamp(5px,1.1vw,7px);border-radius:50%;display:inline-block;flex-shrink:0}
+.event-labels{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.legend{display:flex;flex-wrap:wrap;gap:7px 12px;padding:clamp(9px,1.5vw,13px) clamp(10px,2vw,15px);border-top:1px solid var(--line)}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:clamp(.68rem,1.5vw,.78rem);color:#655648;min-width:0}
+.legend .mark{width:9px;height:9px;flex-shrink:0}
+.day-events{width:100%;min-width:0;margin-top:clamp(10px,2vw,16px);background:var(--paper);border:1px solid var(--line);border-radius:clamp(10px,2vw,18px);overflow:hidden;box-shadow:0 8px 26px #5d47210d}
+.events-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;padding:clamp(12px,2.5vw,16px);border-bottom:1px solid var(--line)}
+.events-head>div{min-width:0}
+.events-head h2{font-size:clamp(.95rem,2.3vw,1.08rem);margin:0;overflow-wrap:anywhere}
+.events-date{color:var(--muted);font-size:clamp(.72rem,1.7vw,.82rem);margin-top:4px;overflow-wrap:anywhere}
+.calendar-checks{display:flex;flex-wrap:wrap;gap:7px;padding:12px 15px;border-bottom:1px solid var(--line)}
+.check{display:inline-flex;align-items:center;gap:6px;background:#f8f2e9;border:1px solid #e9dece;border-radius:999px;padding:7px 9px;font-size:clamp(.7rem,1.5vw,.78rem);cursor:pointer;max-width:100%}
+.check input{accent-color:var(--accent);margin:0;flex-shrink:0}
+.feed{padding:0 clamp(10px,2vw,15px) 14px;min-width:0}
+.feed iframe{display:block;width:100%;max-width:100%;height:clamp(300px,48vh,520px);border:0;background:transparent}
+.event-row{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid #f0e8de}
+.event-row:last-child{border-bottom:0}
+.event-dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.event-main{min-width:0;flex:1}
+.event-name{font-weight:700;overflow-wrap:anywhere}
+.event-meta{font-size:.82rem;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
+.empty{padding:25px 10px;color:var(--muted);text-align:center;line-height:1.6}
+.notice{font-size:clamp(.72rem,1.5vw,.78rem);line-height:1.5;color:var(--muted);padding:14px 3px;overflow-wrap:anywhere}
+.google-link{color:var(--accent);font-size:clamp(.7rem,1.6vw,.82rem);font-weight:750;text-decoration:none;white-space:nowrap;flex-shrink:0}
+@media(max-width:420px){
+ .app{padding:10px 7px max(16px,env(safe-area-inset-bottom))}
+ .brand{letter-spacing:.08em}
+ .top{gap:7px}
+ .monthbar{gap:5px}
+ .nav{gap:3px}
+ .nav button{min-width:34px;min-height:36px;padding:6px 8px;border-radius:9px}
+ .day{min-height:clamp(44px,14vw,62px)}
+ .daynum{width:24px;height:24px}
+ .calendar-checks{padding:9px;gap:6px}
+ .check{padding:6px 7px}
+ .events-head{align-items:flex-start}
+}
+@media(orientation:landscape) and (max-height:600px){
+ .app{padding:6px 12px max(10px,env(safe-area-inset-bottom))}
+ .top{margin-bottom:4px}
+ .brand{display:none}
+ h1{font-size:1.1rem;margin:0}
+ .monthbar{margin:4px 0 7px}
+ .month-title{font-size:clamp(1.2rem,4vh,1.7rem)}
+ .nav button{min-height:32px;padding:4px 10px}
+ .weekdays div{padding:4px 0}
+ .day{min-height:clamp(34px,8vh,58px);padding:2px 0}
+ .daynum{width:23px;height:23px;font-size:.8rem}
+ .legend{padding:6px 10px;gap:5px 10px}
+ .day-events{margin-top:8px}
+ .feed iframe{height:50vh}
+}
+@media(min-width:900px){
+ .app{padding-top:28px}
+ .cal-shell,.day-events{border-radius:18px}
+ .day{min-height:clamp(88px,8vw,116px)}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div><div class="brand">COMMUNITY CALENDAR</div><h1>教會日曆</h1></div>
+    <div class="clock"><div id="time">--:--:--</div><div id="dateLabel">香港時間</div></div>
+  </header>
+  <div class="monthbar">
+    <div class="month-title" id="monthTitle">載入中…</div>
+    <div class="nav">
+      <button id="prev" aria-label="上一個月">‹</button>
+      <button class="todaybtn" id="today">今天</button>
+      <button id="next" aria-label="下一個月">›</button>
+    </div>
+  </div>
+  <section class="cal-shell" aria-label="月曆">
+    <div class="weekdays"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
+    <div class="days" id="days"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+  <section class="day-events">
+    <div class="events-head">
+      <div><h2 id="eventTitle">所選日期的活動</h2><div class="events-date" id="eventDate"></div></div>
+      <a class="google-link" id="openDay" href="https://calendar.google.com/" target="_blank" rel="noopener noreferrer">在 Google Calendar 開啟 ↗</a>
+    </div>
+    <div class="calendar-checks" id="checks"></div>
+    <div class="feed" id="feed"><div class="empty">選擇日期後，會在這裡顯示當日活動。</div></div>
+  </section>
+  <div class="notice">日曆顏色及名稱依照你提供的截圖設定。為了讀取公開日曆的實際活動資料，下一步仍需連接可讀取 Google Calendar 活動的資料來源；目前此版先建立響應式月曆及日期選擇介面。公開日曆中的學生資料請先確認適合公開。</div>
+</div>
+<script>
+const calendars=[
+ {name:"全教會",id:"5feb8669918e0c65e45c6debb6dc344a824f7d4bbe53887150df9bf8ed5596e2@group.calendar.google.com",color:"#7CB342"},
+ {name:"區",id:"9d0718947251b0ecb937d26521e006c9e458155a8b0542442996ae64112a513e@group.calendar.google.com",color:"#B39DDB"},
+ {name:"學生同工",id:"144b428f9fda4934be111d528e42fd6e831abf7880aca0b94576a6f449b5fb60@group.calendar.google.com",color:"#EF746C"},
+ {name:"學生周間聚會",id:"6d5e78d1ae879ea7dd573f6193354eae02b085523b874cb0fb30b3736cd6e322@group.calendar.google.com",color:"#FFBF16"},
+ {name:"學生生日",id:"640bce4eda2a30e86dfe565dee12ac630bdc9454004d219e3ab359682f722bfe@group.calendar.google.com",color:"#FF9800"},
+ {name:"學生聚會",id:"0e5684c7eea55390ead078357f529444010f25599c092a48717bdb6bcbbb217d@group.calendar.google.com",color:"#03A9F4"}
+];
+const enabled=new Set(calendars.map(c=>c.id));
+const nowHK=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Hong_Kong"}));
+let todayDate=nowHK(), shown=new Date(todayDate.getFullYear(),todayDate.getMonth(),1), selected=new Date(todayDate.getFullYear(),todayDate.getMonth(),todayDate.getDate());
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+const dateKey=d=>`${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+const dateText=d=>new Intl.DateTimeFormat("zh-Hant-HK",{timeZone:"Asia/Hong_Kong",year:"numeric",month:"long",day:"numeric",weekday:"long"}).format(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),4)));
+function updateClock(){
+ const n=new Date();
+ $("time").textContent=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Hong_Kong",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(n);
+ $("dateLabel").textContent=new Intl.DateTimeFormat("zh-Hant-HK",{timeZone:"Asia/Hong_Kong",year:"numeric",month:"short",day:"numeric",weekday:"short"}).format(n);
+}
+function renderLegend(){
+ $("legend").innerHTML="";
+ calendars.forEach(c=>{
+  const item=document.createElement("div");item.className="legend-item";
+  item.innerHTML=`<span class="mark" style="background:${c.color}"></span><span>${c.name}</span>`;
+  $("legend").append(item);
+ });
+ $("checks").innerHTML="";
+ calendars.forEach(c=>{
+  const label=document.createElement("label");label.className="check";
+  const input=document.createElement("input");input.type="checkbox";input.checked=enabled.has(c.id);
+  input.addEventListener("change",()=>{input.checked?enabled.add(c.id):enabled.delete(c.id);renderDays();});
+  const dot=document.createElement("span");dot.className="mark";dot.style.background=c.color;
+  const name=document.createElement("span");name.textContent=c.name;
+  label.append(input,dot,name);$("checks").append(label);
+ });
+}
+function renderDays(){
+ $("monthTitle").textContent=new Intl.DateTimeFormat("zh-Hant-HK",{year:"numeric",month:"long"}).format(new Date(shown.getFullYear(),shown.getMonth(),15));
+ const first=new Date(shown.getFullYear(),shown.getMonth(),1).getDay();
+ const count=new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate();
+ const container=$("days");container.innerHTML="";
+ for(let i=0;i<first;i++){const blank=document.createElement("div");blank.className="day blank";container.append(blank);}
+ for(let d=1;d<=count;d++){
+  const date=new Date(shown.getFullYear(),shown.getMonth(),d);
+  const b=document.createElement("button");b.className="day";
+  if(date.toDateString()===selected.toDateString())b.classList.add("selected");
+  if(date.toDateString()===todayDate.toDateString())b.classList.add("today");
+  b.setAttribute("aria-label",dateText(date));
+  const num=document.createElement("span");num.className="daynum";num.textContent=d;b.append(num);
+  // Calendar events cannot be inferred from the cid links alone; avoid showing fabricated event markers.
+  b.addEventListener("click",()=>{selected=date;renderDays();renderSelectedDay();});
+  container.append(b);
+ }
+ renderSelectedDay();
+}
+function renderSelectedDay(){
+ $("eventTitle").textContent="當日活動";
+ $("eventDate").textContent=dateText(selected);
+ $("feed").innerHTML="";
+ const url=new URL("https://calendar.google.com/calendar/embed");
+ url.searchParams.set("mode","AGENDA");
+ url.searchParams.set("ctz","Asia/Hong_Kong");
+ url.searchParams.set("showTitle","0");
+ url.searchParams.set("showTabs","0");
+ url.searchParams.set("showPrint","0");
+ url.searchParams.set("showCalendars","0");
+ url.searchParams.set("showTz","0");
+ url.searchParams.set("dates",`${dateKey(selected)}/${dateKey(new Date(selected.getFullYear(),selected.getMonth(),selected.getDate()+1))}`);
+ calendars.filter(c=>enabled.has(c.id)).forEach(c=>{url.searchParams.append("src",c.id);url.searchParams.append("color",c.color);});
+ $("openDay").href=url.toString();
+ if(!enabled.size){
+  $("feed").innerHTML='<div class="empty">請先選擇至少一個日曆。</div>';return;
+ }
+ const iframe=document.createElement("iframe");
+ iframe.title="所選日期的 Google Calendar 活動";
+ iframe.src=url.toString();
+ iframe.loading="lazy";
+ iframe.style.cssText="display:block;width:100%;height:360px;border:0;background:transparent";
+ $("feed").append(iframe);
+}
+$("prev").addEventListener("click",()=>{shown=new Date(shown.getFullYear(),shown.getMonth()-1,1);selected=new Date(shown.getFullYear(),shown.getMonth(),Math.min(selected.getDate(),new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate()));renderDays();});
+$("next").addEventListener("click",()=>{shown=new Date(shown.getFullYear(),shown.getMonth()+1,1);selected=new Date(shown.getFullYear(),shown.getMonth(),Math.min(selected.getDate(),new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate()));renderDays();});
+$("today").addEventListener("click",()=>{todayDate=nowHK();shown=new Date(todayDate.getFullYear(),todayDate.getMonth(),1);selected=new Date(todayDate.getFullYear(),todayDate.getMonth(),todayDate.getDate());renderDays();});
+renderLegend();renderDays();updateClock();setInterval(updateClock,1000);
+</script>
+</body>
+</html>
