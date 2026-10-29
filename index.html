@@ -45,7 +45,8 @@ h1{font-size:clamp(1.25rem,4vw,2.25rem);margin:4px 0 0;letter-spacing:-.035em;ov
 .day.today .daynum{background:#87684a;color:white}
 .day.selected:not(.today) .daynum{color:#6d4e31}
 .daynum{display:flex;align-items:center;justify-content:center;width:clamp(24px,4vw,30px);height:clamp(24px,4vw,30px);flex:0 0 auto;border-radius:50%;font-size:clamp(.75rem,2vw,1rem);font-weight:650}
-.marks{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;max-width:100%;min-height:7px}
+.marks{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:3px;max-width:100%;min-height:7px;margin-top:1px}
+.marks .mark{width:5px;height:5px}
 .mark{width:clamp(5px,1.1vw,7px);height:clamp(5px,1.1vw,7px);border-radius:50%;display:inline-block;flex-shrink:0}
 .event-labels{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .legend{display:flex;flex-wrap:wrap;gap:7px 12px;padding:clamp(9px,1.5vw,13px) clamp(10px,2vw,15px);border-top:1px solid var(--line)}
@@ -98,10 +99,13 @@ h1{font-size:clamp(1.25rem,4vw,2.25rem);margin:4px 0 0;letter-spacing:-.035em;ov
  .day-events{margin-top:8px}
  .feed iframe{height:50vh}
  .monthbar,.cal-shell,.day-events,.notice{display:none!important}
- .landscape-calendar{display:block!important;width:100%;height:calc(100dvh - 12px);min-height:280px;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
- .landscape-calendar iframe{display:block;width:100%;height:100%;min-height:280px;border:0}
- .top{margin-bottom:5px}
- .app{padding:6px 10px max(6px,env(safe-area-inset-bottom))}
+ .top{height:34px;min-height:34px;margin:0 0 4px!important;gap:8px}
+ h1{font-size:1rem!important;line-height:1.2}
+ .clock{font-size:.62rem}
+ #time{font-size:.82rem}
+ .landscape-calendar{display:block!important;width:100%;height:calc(100dvh - 48px);min-height:220px;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:var(--paper);position:relative}
+ .landscape-calendar iframe{display:block;width:118%;height:118%;min-height:260px;border:0;transform:scale(.847);transform-origin:top left}
+ .app{height:100dvh;min-height:0;overflow:hidden;padding:4px 8px max(4px,env(safe-area-inset-bottom))}
 }
 @media(min-width:900px){
  .app{padding-top:28px}
@@ -173,7 +177,7 @@ function renderLegend(){
  calendars.forEach(c=>{
   const label=document.createElement("label");label.className="check";
   const input=document.createElement("input");input.type="checkbox";input.checked=enabled.has(c.id);
-  input.addEventListener("change",()=>{input.checked?enabled.add(c.id):enabled.delete(c.id);renderDays();renderLandscapeCalendar();});
+  input.addEventListener("change",()=>{input.checked?enabled.add(c.id):enabled.delete(c.id);renderDays();renderLandscapeCalendar();loadMonthDots();});
   const dot=document.createElement("span");dot.className="mark";dot.style.background=c.color;
   const name=document.createElement("span");name.textContent=c.name;
   label.append(input,dot,name);$("checks").append(label);
@@ -205,6 +209,83 @@ function renderLandscapeCalendar(){
  iframe.loading="lazy";
  host.append(iframe);
 }
+
+const eventDates = new Map(); // date key -> set of calendar IDs
+const monthFetchCache = new Map();
+function addEventDate(key, calendarId){
+ if(!eventDates.has(key))eventDates.set(key,new Set());
+ eventDates.get(key).add(calendarId);
+}
+function parseIcsDate(value){
+ const m=(value||"").match(/^(\d{4})(\d{2})(\d{2})/);
+ if(!m)return null;
+ return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+}
+function expandIcsEvent(start, rule, monthStart, monthEnd, calendarId){
+ if(!start)return;
+ const addIfInMonth=d=>{
+  if(d>=monthStart && d<monthEnd)addEventDate(dateKey(d),calendarId);
+ };
+ if(!rule){addIfInMonth(start);return;}
+ const parts={};
+ rule.split(";").forEach(p=>{const i=p.indexOf("=");if(i>0)parts[p.slice(0,i)]=p.slice(i+1);});
+ const freq=parts.FREQ;
+ const interval=Math.max(1,Number(parts.INTERVAL||1));
+ const until=parts.UNTIL?parseIcsDate(parts.UNTIL):null;
+ const byday=(parts.BYDAY||"").split(",").filter(Boolean).map(x=>x.slice(-2));
+ const dayCodes=["SU","MO","TU","WE","TH","FR","SA"];
+ const stop=until&&until<monthEnd?new Date(until.getFullYear(),until.getMonth(),until.getDate()+1):monthEnd;
+ if(freq==="DAILY"){
+  for(let d=new Date(start);d<stop;d.setDate(d.getDate()+1)){
+   const days=Math.floor((d-start)/86400000);
+   if(days>=0 && days%interval===0)addIfInMonth(new Date(d));
+  }
+ }else if(freq==="WEEKLY"){
+  for(let d=new Date(Math.max(start.getTime(),monthStart.getTime()));d<stop;d.setDate(d.getDate()+1)){
+   const week=Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay())-new Date(start.getFullYear(),start.getMonth(),start.getDate()-start.getDay()))/604800000);
+   const allowed=byday.length?byday:[dayCodes[start.getDay()]];
+   if(week>=0 && week%interval===0 && allowed.includes(dayCodes[d.getDay()]))addIfInMonth(new Date(d));
+  }
+ }else if(freq==="MONTHLY"){
+  for(let y=monthStart.getFullYear(),m=monthStart.getMonth();y<stop.getFullYear() || (y===stop.getFullYear()&&m<=stop.getMonth());){
+   const d=new Date(y,m,start.getDate());
+   const diff=(y-start.getFullYear())*12+(m-start.getMonth());
+   if(diff>=0&&diff%interval===0&&d.getMonth()===m)addIfInMonth(d);
+   m++;if(m>11){m=0;y++;}
+  }
+ }else{
+  addIfInMonth(start);
+ }
+}
+async function loadMonthDots(){
+ eventDates.clear();
+ const monthStart=new Date(shown.getFullYear(),shown.getMonth(),1);
+ const monthEnd=new Date(shown.getFullYear(),shown.getMonth()+1,1);
+ const jobs=calendars.filter(c=>enabled.has(c.id)).map(async c=>{
+  try{
+   const ics=`https://calendar.google.com/calendar/ical/${encodeURIComponent(c.id)}/public/basic.ics`;
+   const proxy=`https://api.allorigins.win/raw?url=${encodeURIComponent(ics)}`;
+   const response=await fetch(proxy,{cache:"no-store"});
+   if(!response.ok)throw new Error("Calendar feed unavailable");
+   let text=await response.text();
+   text=text.replace(/\r?\n[ \t]/g,"");
+   const blocks=text.split("BEGIN:VEVENT").slice(1);
+   for(const block of blocks){
+    const content=block.split("END:VEVENT")[0];
+    const startLine=content.match(/^DTSTART[^:]*:(.+)$/m);
+    if(!startLine)continue;
+    const start=parseIcsDate(startLine[1].trim());
+    if(!start)continue;
+    const ruleLine=content.match(/^RRULE:(.+)$/m);
+    expandIcsEvent(start,ruleLine?ruleLine[1].trim():null,monthStart,monthEnd,c.id);
+   }
+  }catch(e){
+   console.warn("Could not load calendar dots for",c.name,e);
+  }
+ });
+ await Promise.all(jobs);
+ renderDays();
+}
 function renderDays(){
  $("monthTitle").textContent=new Intl.DateTimeFormat("zh-Hant-HK",{year:"numeric",month:"long"}).format(new Date(shown.getFullYear(),shown.getMonth(),15));
  const first=new Date(shown.getFullYear(),shown.getMonth(),1).getDay();
@@ -218,7 +299,14 @@ function renderDays(){
   if(date.toDateString()===todayDate.toDateString())b.classList.add("today");
   b.setAttribute("aria-label",dateText(date));
   const num=document.createElement("span");num.className="daynum";num.textContent=d;b.append(num);
-  // Calendar events cannot be inferred from the cid links alone; avoid showing fabricated event markers.
+  const marks=document.createElement("span");marks.className="marks";
+  const ids=eventDates.get(dateKey(date));
+  if(ids){
+   calendars.filter(c=>enabled.has(c.id)&&ids.has(c.id)).forEach(c=>{
+    const dot=document.createElement("span");dot.className="mark";dot.style.background=c.color;dot.setAttribute("aria-label",c.name);marks.append(dot);
+   });
+  }
+  b.append(marks);
   b.addEventListener("click",()=>{selected=date;renderDays();renderSelectedDay();});
   container.append(b);
  }
@@ -249,10 +337,10 @@ function renderSelectedDay(){
  iframe.style.cssText="display:block;width:100%;height:360px;border:0;background:transparent";
  $("feed").append(iframe);
 }
-$("prev").addEventListener("click",()=>{shown=new Date(shown.getFullYear(),shown.getMonth()-1,1);selected=new Date(shown.getFullYear(),shown.getMonth(),Math.min(selected.getDate(),new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate()));renderDays();});
-$("next").addEventListener("click",()=>{shown=new Date(shown.getFullYear(),shown.getMonth()+1,1);selected=new Date(shown.getFullYear(),shown.getMonth(),Math.min(selected.getDate(),new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate()));renderDays();});
-$("today").addEventListener("click",()=>{todayDate=nowHK();shown=new Date(todayDate.getFullYear(),todayDate.getMonth(),1);selected=new Date(todayDate.getFullYear(),todayDate.getMonth(),todayDate.getDate());renderDays();});
-renderLegend();renderDays();renderLandscapeCalendar();updateClock();setInterval(updateClock,1000);
+$("prev").addEventListener("click",()=>{shown=new Date(shown.getFullYear(),shown.getMonth()-1,1);selected=new Date(shown.getFullYear(),shown.getMonth(),Math.min(selected.getDate(),new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate()));renderDays();loadMonthDots();});
+$("next").addEventListener("click",()=>{shown=new Date(shown.getFullYear(),shown.getMonth()+1,1);selected=new Date(shown.getFullYear(),shown.getMonth(),Math.min(selected.getDate(),new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate()));renderDays();loadMonthDots();});
+$("today").addEventListener("click",()=>{todayDate=nowHK();shown=new Date(todayDate.getFullYear(),todayDate.getMonth(),1);selected=new Date(todayDate.getFullYear(),todayDate.getMonth(),todayDate.getDate());renderDays();loadMonthDots();});
+renderLegend();renderDays();renderLandscapeCalendar();loadMonthDots();updateClock();setInterval(updateClock,1000);
 </script>
 </body>
 </html>
