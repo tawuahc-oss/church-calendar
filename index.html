@@ -259,7 +259,6 @@ const calendars=[
  {name:"香港節慶假日",id:"hk-public-holidays",file:"hk-holidays.ics",color:"#D95D39"}
 ];
 
-
 const enabled=new Set(calendars.map(c=>c.id));
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,"0");
@@ -271,7 +270,6 @@ let shown=new Date(today.getFullYear(),today.getMonth(),1);
 let selected=new Date(today.getFullYear(),today.getMonth(),today.getDate());
 let eventsByDate=new Map(),dotsByDate=new Map();
 let loadSequence=0;
-
 
 function setLoading(active){
  const el=$("loadingStatus");
@@ -401,42 +399,89 @@ function addCalendarEvent(c,event,d,monthStart,monthEnd){
 
 function expandCalendarEvent(c,event,monthStart,monthEnd,excludedDates){
  if(!event.start||event.status==="CANCELLED")return;
+ const startDate=new Date(event.start.date.getFullYear(),event.start.date.getMonth(),event.start.date.getDate());
  const add=d=>{
-  if(!excludedDates.has(key(d)))addCalendarEvent(c,event,d,monthStart,monthEnd);
+  const day=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  if(day<startDate||day<monthStart||day>=monthEnd)return;
+  if(!excludedDates.has(key(day)))addCalendarEvent(c,event,day,monthStart,monthEnd);
  };
- if(!event.rule){add(event.start.date);return;}
+ if(!event.rule){add(startDate);return;}
  const parts={};
- event.rule.split(";").forEach(x=>{
-  const i=x.indexOf("=");
-  if(i>0)parts[x.slice(0,i)]=x.slice(i+1);
+ event.rule.split(";").forEach(part=>{
+  const i=part.indexOf("=");
+  if(i>0)parts[part.slice(0,i).toUpperCase()]=part.slice(i+1).toUpperCase();
  });
- const freq=parts.FREQ,interval=Math.max(1,+(parts.INTERVAL||1));
+ const freq=parts.FREQ;
+ const interval=Math.max(1,parseInt(parts.INTERVAL||"1",10)||1);
  const until=parts.UNTIL?parseDate(parts.UNTIL)?.date:null;
- const byday=(parts.BYDAY||"").split(",").map(x=>x.slice(-2)).filter(Boolean);
- const codes=["SU","MO","TU","WE","TH","FR","SA"];
  const stop=until&&until<monthEnd
   ?new Date(until.getFullYear(),until.getMonth(),until.getDate()+1)
   :monthEnd;
-
+ const codes=["SU","MO","TU","WE","TH","FR","SA"];
+ const byday=(parts.BYDAY||"").split(",").filter(Boolean).map(token=>({
+  token, day:token.slice(-2), ordinal:token.length>2?parseInt(token.slice(0,-2),10):null
+ }));
+ const bymonthday=(parts.BYMONTHDAY||"").split(",").filter(Boolean).map(v=>parseInt(v,10)).filter(Number.isFinite);
+ const bysetpos=(parts.BYSETPOS||"").split(",").filter(Boolean).map(v=>parseInt(v,10)).filter(Number.isFinite);
+ const sameDay=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
+ const daysInMonth=(y,m)=>new Date(y,m+1,0).getDate();
+ const nthWeekday=(y,m,weekday,n)=>{
+  if(n>0){const first=new Date(y,m,1).getDay();return 1+((weekday-first+7)%7)+(n-1)*7;}
+  const last=daysInMonth(y,m),lastWeekday=new Date(y,m,last).getDay();
+  return last-((lastWeekday-weekday+7)%7)+((n+1)*7);
+ };
+ const applySetPos=items=>{
+  if(!bysetpos.length)return items;
+  const chosen=[];
+  bysetpos.forEach(pos=>{const i=pos>0?pos-1:items.length+pos;if(i>=0&&i<items.length&&!chosen.some(d=>sameDay(d,items[i])))chosen.push(items[i]);});
+  return chosen;
+ };
  if(freq==="DAILY"){
-  for(let d=new Date(event.start.date);d<stop;d.setDate(d.getDate()+1)){
-   const n=Math.round((d-event.start.date)/86400000);
+  const first=new Date(Math.max(startDate.getTime(),monthStart.getTime()));
+  for(let d=new Date(first);d<stop;d.setDate(d.getDate()+1)){
+   const n=Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate())-startDate)/86400000);
    if(n>=0&&n%interval===0)add(new Date(d));
   }
  }else if(freq==="WEEKLY"){
-  for(let d=new Date(Math.max(event.start.date,monthStart));d<stop;d.setDate(d.getDate()+1)){
-   const week=Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay())-
-    new Date(event.start.date.getFullYear(),event.start.date.getMonth(),event.start.date.getDate()-event.start.date.getDay()))/604800000);
-   if(week>=0&&week%interval===0&&(byday.length?byday:[codes[event.start.date.getDay()]]).includes(codes[d.getDay()]))add(new Date(d));
+  const first=new Date(Math.max(startDate.getTime(),monthStart.getTime()));
+  const startWeek=new Date(startDate.getFullYear(),startDate.getMonth(),startDate.getDate()-startDate.getDay());
+  for(let d=new Date(first);d<stop;d.setDate(d.getDate()+1)){
+   const weekStart=new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay());
+   const week=Math.floor((weekStart-startWeek)/604800000);
+   const weekdays=byday.length?byday.map(x=>x.day):[codes[startDate.getDay()]];
+   if(week>=0&&week%interval===0&&weekdays.includes(codes[d.getDay()]))add(new Date(d));
   }
  }else if(freq==="MONTHLY"){
-  for(let y=monthStart.getFullYear(),m=monthStart.getMonth();y<stop.getFullYear()||(y===stop.getFullYear()&&m<=stop.getMonth());){
-   const d=new Date(y,m,event.start.date.getDate());
-   const diff=(y-event.start.date.getFullYear())*12+(m-event.start.date.getMonth());
-   if(diff>=0&&diff%interval===0&&d.getMonth()===m)add(d);
+  for(let y=Math.max(startDate.getFullYear(),monthStart.getFullYear()),m=(y===startDate.getFullYear()&&y===monthStart.getFullYear()?Math.max(startDate.getMonth(),monthStart.getMonth()):(y===startDate.getFullYear()?startDate.getMonth():monthStart.getMonth()));y<stop.getFullYear()||(y===stop.getFullYear()&&m<=stop.getMonth());){
+   const diff=(y-startDate.getFullYear())*12+(m-startDate.getMonth());
+   if(diff>=0&&diff%interval===0){
+    const total=daysInMonth(y,m);let candidates=[];
+    if(bymonthday.length){
+     bymonthday.forEach(n=>{const day=n>0?n:total+n+1;if(day>=1&&day<=total)candidates.push(new Date(y,m,day));});
+    }else if(byday.length){
+     byday.forEach(rule=>{
+      const weekday=codes.indexOf(rule.day);if(weekday<0)return;
+      if(rule.ordinal){const day=nthWeekday(y,m,weekday,rule.ordinal);if(day>=1&&day<=total)candidates.push(new Date(y,m,day));}
+      else for(let day=1;day<=total;day++){const d=new Date(y,m,day);if(d.getDay()===weekday)candidates.push(d);}
+     });
+    }else{
+     const day=startDate.getDate();if(day<=total)candidates.push(new Date(y,m,day));
+    }
+    candidates.sort((a,b)=>a-b);
+    candidates=applySetPos(candidates);
+    candidates.forEach(add);
+   }
    m++;if(m>11){m=0;y++;}
   }
- }else add(event.start.date);
+ }else if(freq==="YEARLY"){
+  for(let y=Math.max(startDate.getFullYear(),monthStart.getFullYear());y<=stop.getFullYear();y++){
+   const diff=y-startDate.getFullYear();if(diff<0||diff%interval!==0)continue;
+   const m=parts.BYMONTH?Math.max(1,parseInt(parts.BYMONTH,10))-1:startDate.getMonth();
+   const day=startDate.getDate();if(day<=daysInMonth(y,m))add(new Date(y,m,day));
+  }
+ }else{
+  add(startDate);
+ }
 }
 
 function parseCalendarEvents(text,c,monthStart,monthEnd){
@@ -461,8 +506,8 @@ function parseCalendarEvents(text,c,monthStart,monthEnd){
 }
 
 async function fetchCalendarText(calendar,forceRefresh=false){
- // The GitHub Actions workflow periodically downloads public ICS feeds into /data.
- // For the hosted site use its own /data folder; for a local file use the published snapshot.
+ // GitHub Actions 定期下載公開 ICS 訂閱，並存入 /data。
+ // 網站從自己的 /data 資料夾讀取；本機 file:// 開啟時讀取 GitHub Pages 上的快照。
  const base=location.protocol==="file:"
   ? "https://tawuhac-oss.github.io/church-calendar/data/"
   : new URL("data/",location.href).href;
@@ -486,7 +531,6 @@ async function loadEvents(forceRefresh=false){
 
  await Promise.all(calendars.filter(c=>enabled.has(c.id)).map(async c=>{
   try{
-   // Load a public iCalendar snapshot generated automatically by GitHub Actions.
    const text=(await fetchCalendarText(c,forceRefresh)).replace(/\r?\n[ \t]/g,"");
    if(thisLoad===loadSequence)parseCalendarEvents(text,c,ms,me);
   }catch(err){
@@ -764,7 +808,7 @@ function renderSelected(){
  feed.append(iframe);
 }
 
- function renderLandscape(){
+function renderLandscape(){
  $("landscapeTitle").textContent=monthName(shown);
  const host=$("landscapeGrid");
  host.innerHTML="";
