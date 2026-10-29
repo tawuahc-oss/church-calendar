@@ -1,346 +1,267 @@
+
 <!doctype html>
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f7f1e8">
-<link rel="icon" type="image/png" sizes="180x180" href="/church-calendar/calendar-thumbnail.png">
+<link rel="icon" type="image/png" href="/church-calendar/calendar-thumbnail.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/church-calendar/calendar-thumbnail.png">
 <meta name="apple-mobile-web-app-title" content="學生月程">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>學生月程</title>
 <style>
-:root{
-  --bg:#f7f1e8;--paper:#fffdf9;--ink:#3e342b;--muted:#887b6d;--line:#e5dacb;
-  --accent:#87684a;--accent-soft:#eee2d2;
-  --all:#7CB342;--district:#B39DDB;--staff:#EF746C;--weekday:#FFBF16;--birthday:#FF9800;--student:#03A9F4;
-}
+:root{--bg:#f7f1e8;--paper:#fffdf9;--ink:#3e342b;--muted:#887b6d;--line:#e5dacb;--accent:#87684a}
 *{box-sizing:border-box}
-html{min-width:0;width:100%;min-height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body{margin:0;width:100%;min-width:0;min-height:100dvh;overflow-x:hidden;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+html,body{margin:0;min-height:100%;width:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%}
+body{overflow-x:hidden}
 button,input{font:inherit}
 button{touch-action:manipulation}
-.app{width:100%;max-width:1440px;min-width:0;min-height:100dvh;margin:0 auto;padding:clamp(10px,2.4vw,28px);padding-left:max(clamp(10px,2.4vw,28px),env(safe-area-inset-left));padding-right:max(clamp(10px,2.4vw,28px),env(safe-area-inset-right));padding-bottom:max(18px,env(safe-area-inset-bottom))}
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;margin-bottom:clamp(8px,1.5vh,16px)}
-.top>div:first-child{min-width:0}
-.brand{font-size:clamp(.65rem,1.4vw,.78rem);letter-spacing:.12em;color:var(--accent);font-weight:800}
-h1{font-size:clamp(1.25rem,4vw,2.25rem);margin:4px 0 0;letter-spacing:-.035em;overflow-wrap:anywhere}
-.clock{text-align:right;color:var(--muted);font-size:clamp(.68rem,1.5vw,.8rem);white-space:nowrap;flex-shrink:0}
-#time{font-size:clamp(.9rem,2.3vw,1.1rem);color:var(--ink);font-weight:750;font-variant-numeric:tabular-nums}
-.monthbar{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;margin:clamp(8px,1.5vh,14px) 0}
-.month-title{min-width:0;font-size:clamp(1.35rem,5vw,2.35rem);font-weight:800;letter-spacing:-.04em;overflow-wrap:anywhere}
-.nav{display:flex;gap:5px;flex-shrink:0}
-.nav button{min-width:40px;min-height:40px;border:1px solid var(--line);background:var(--paper);color:var(--accent);border-radius:12px;padding:8px 11px;font-weight:700}
-.todaybtn{background:var(--accent)!important;color:white!important;border-color:var(--accent)!important}
+.app{max-width:1500px;margin:auto;padding:clamp(8px,2vw,24px);min-width:0}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.brand{font-size:.7rem;letter-spacing:.1em;color:var(--accent);font-weight:800}
+h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
+.clock{text-align:right;color:var(--muted);font-size:.75rem;white-space:nowrap}
+#time{font-size:1rem;color:var(--ink);font-weight:750;font-variant-numeric:tabular-nums}
+.monthbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 12px}
+.month-title{font-size:clamp(1.3rem,3vw,2.3rem);font-weight:800;letter-spacing:-.03em}
+.nav{display:flex;gap:5px}
+.nav button{min-width:38px;min-height:38px;border:1px solid var(--line);background:var(--paper);color:var(--accent);border-radius:10px;padding:6px 10px;font-weight:700}
+.todaybtn{background:var(--accent)!important;color:white!important}
 .landscape-calendar{display:none}
-.cal-shell{width:100%;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:clamp(10px,2vw,18px);overflow:hidden;box-shadow:0 8px 26px #5d47210d}
-.weekdays,.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));width:100%;min-width:0}
+.cal-shell,.day-events{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 8px 26px #5d47210d}
+.weekdays,.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
 .weekdays{background:#f0e6d9;border-bottom:1px solid var(--line)}
-.weekdays div{text-align:center;min-width:0;padding:clamp(6px,1.2vw,10px) 0;font-size:clamp(.65rem,1.5vw,.77rem);color:var(--muted);font-weight:800}
-.day{position:relative;min-width:0;min-height:clamp(48px,9vw,112px);padding:clamp(3px,.8vw,7px) 1px;border:0;border-right:1px solid #f0e7dc;border-bottom:1px solid #f0e7dc;background:transparent;color:var(--ink);text-align:left;display:flex;flex-direction:column;align-items:center;gap:clamp(2px,.6vw,5px);overflow:hidden}
+.weekdays div{text-align:center;padding:8px 0;font-size:.8rem;color:var(--muted);font-weight:800}
+.day{min-width:0;min-height:clamp(48px,9vw,100px);padding:4px 1px;border:0;border-right:1px solid #f0e7dc;border-bottom:1px solid #f0e7dc;background:transparent;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:3px;overflow:hidden}
 .day:nth-child(7n){border-right:0}
-.day.blank{pointer-events:none;background:#fbf8f3}
+.day.blank{background:#fbf8f3;pointer-events:none}
 .day.selected{background:#f3e4d3;box-shadow:inset 0 0 0 2px #a98764}
-.day.today .daynum{background:#87684a;color:white}
-.day.selected:not(.today) .daynum{color:#6d4e31}
-.daynum{display:flex;align-items:center;justify-content:center;width:clamp(24px,4vw,30px);height:clamp(24px,4vw,30px);flex:0 0 auto;border-radius:50%;font-size:clamp(.75rem,2vw,1rem);font-weight:650}
-.marks{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:3px;max-width:100%;min-height:7px;margin-top:1px}
-.marks .mark{width:5px;height:5px}
-.mark{width:clamp(5px,1.1vw,7px);height:clamp(5px,1.1vw,7px);border-radius:50%;display:inline-block;flex-shrink:0}
-.event-labels{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
-.legend{display:flex;flex-wrap:wrap;gap:7px 12px;padding:clamp(9px,1.5vw,13px) clamp(10px,2vw,15px);border-top:1px solid var(--line)}
-.legend-item{display:flex;align-items:center;gap:6px;font-size:clamp(.68rem,1.5vw,.78rem);color:#655648;min-width:0}
-.legend .mark{width:9px;height:9px;flex-shrink:0}
-.day-events{width:100%;min-width:0;margin-top:clamp(10px,2vw,16px);background:var(--paper);border:1px solid var(--line);border-radius:clamp(10px,2vw,18px);overflow:hidden;box-shadow:0 8px 26px #5d47210d}
-.events-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;padding:clamp(12px,2.5vw,16px);border-bottom:1px solid var(--line)}
-.events-head>div{min-width:0}
-.events-head h2{font-size:clamp(.95rem,2.3vw,1.08rem);margin:0;overflow-wrap:anywhere}
-.events-date{color:var(--muted);font-size:clamp(.72rem,1.7vw,.82rem);margin-top:4px;overflow-wrap:anywhere}
-.calendar-checks{display:flex;flex-wrap:wrap;gap:7px;padding:12px 15px;border-bottom:1px solid var(--line)}
-.check{display:inline-flex;align-items:center;gap:6px;background:#f8f2e9;border:1px solid #e9dece;border-radius:999px;padding:7px 9px;font-size:clamp(.7rem,1.5vw,.78rem);cursor:pointer;max-width:100%}
-.check input{accent-color:var(--accent);margin:0;flex-shrink:0}
-.feed{padding:0 clamp(10px,2vw,15px) 14px;min-width:0}
-.feed iframe{display:block;width:100%;max-width:100%;height:clamp(300px,48vh,520px);border:0;background:transparent}
-.event-row{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid #f0e8de}
-.event-row:last-child{border-bottom:0}
-.event-dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0}
-.event-main{min-width:0;flex:1}
-.event-name{font-weight:700;overflow-wrap:anywhere}
-.event-meta{font-size:.82rem;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
-.empty{padding:25px 10px;color:var(--muted);text-align:center;line-height:1.6}
-.notice{font-size:clamp(.72rem,1.5vw,.78rem);line-height:1.5;color:var(--muted);padding:14px 3px;overflow-wrap:anywhere}
-.google-link{color:var(--accent);font-size:clamp(.7rem,1.6vw,.82rem);font-weight:750;text-decoration:none;white-space:nowrap;flex-shrink:0}
-@media(max-width:420px){
- .app{padding:10px 7px max(16px,env(safe-area-inset-bottom))}
- .brand{letter-spacing:.08em}
- .top{gap:7px}
- .monthbar{gap:5px}
- .nav{gap:3px}
- .nav button{min-width:34px;min-height:36px;padding:6px 8px;border-radius:9px}
- .day{min-height:clamp(44px,14vw,62px)}
- .daynum{width:24px;height:24px}
- .calendar-checks{padding:9px;gap:6px}
- .check{padding:6px 7px}
- .events-head{align-items:flex-start}
+.day.today .daynum{background:var(--accent);color:white}
+.daynum{width:25px;height:25px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:.9rem;font-weight:650;flex-shrink:0}
+.marks{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;width:100%;min-height:7px;overflow:hidden}
+.dot-row{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;min-height:5px;width:100%}
+.mark{display:inline-block;width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.all-day-mark{display:block;width:min(80%,22px);height:3px;border-radius:2px;flex-shrink:0}
+.legend{display:flex;flex-wrap:wrap;gap:7px 12px;padding:10px 12px;border-top:1px solid var(--line)}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.78rem;color:#655648}
+.legend .mark{width:9px;height:9px}
+.day-events{margin-top:12px}
+.events-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border-bottom:1px solid var(--line)}
+.events-head h2{font-size:1rem;margin:0}
+.events-date{color:var(--muted);font-size:.8rem;margin-top:4px}
+.google-link{color:var(--accent);font-size:.8rem;font-weight:700;text-decoration:none;white-space:nowrap}
+.calendar-checks{display:flex;flex-wrap:wrap;gap:7px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.check{display:inline-flex;align-items:center;gap:5px;background:#f8f2e9;border:1px solid #e9dece;border-radius:999px;padding:6px 8px;font-size:.76rem;cursor:pointer}
+.check input{accent-color:var(--accent);margin:0}
+.feed{padding:0 12px 12px}
+.feed iframe{display:block;width:100%;height:350px;border:0}
+.notice{font-size:.76rem;line-height:1.5;color:var(--muted);padding:12px 3px}
+.landscape-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.landscape-title{font-size:clamp(1rem,2vw,1.5rem);font-weight:800}
+.landscape-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:auto repeat(var(--weeks,5),minmax(0,1fr));height:calc(100% - 34px);border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--paper)}
+.lwday{text-align:center;padding:3px 0;background:#f0e6d9;color:var(--muted);font-weight:800;font-size:clamp(.6rem,.85vw,.85rem);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.lday{min-width:0;min-height:0;padding:3px;border-right:1px solid #eee4d8;border-bottom:1px solid #eee4d8;overflow:hidden}
+.lday:nth-child(7n){border-right:0}
+.ldaynum{font-size:clamp(.68rem,.9vw,.9rem);font-weight:750;margin-bottom:2px}
+.lday.today .ldaynum{display:inline-flex;background:var(--accent);color:white;border-radius:50%;width:20px;height:20px;align-items:center;justify-content:center}
+.levent{font-size:clamp(.55rem,.72vw,.76rem);line-height:1.18;border-radius:3px;padding:2px 3px;margin:1px 0;overflow:hidden;overflow-wrap:anywhere;word-break:break-word;color:#2f2b26;background:#eee}
+.levent .etime{font-weight:750;white-space:nowrap}
+.landscape-empty{font-size:.8rem;color:var(--muted);padding:10px}
+@media(max-width:600px) and (orientation:portrait){
+ .app{padding:9px 7px}
+ .brand{font-size:.6rem}
+ h1{font-size:1.25rem}
+ .top{margin-bottom:8px}
+ .monthbar{margin:6px 0 9px}
+ .nav button{min-width:33px;min-height:34px;padding:5px 8px}
+ .weekdays div{font-size:.7rem;padding:6px 0}
+ .day{min-height:clamp(44px,12vw,62px);gap:2px}
+ .daynum{width:23px;height:23px;font-size:.82rem}
+ .legend{gap:6px 9px;padding:8px}
+ .legend-item{font-size:.7rem}
+ .calendar-checks{padding:8px;gap:5px}
+ .check{font-size:.69rem;padding:5px 6px}
+ .feed iframe{height:330px}
 }
-@media (orientation:landscape) and (max-height:600px), (orientation:landscape) and (min-width:700px){
- .app{padding:6px 12px max(10px,env(safe-area-inset-bottom))}
- .top{margin-bottom:4px}
+@media (orientation:landscape) and (max-height:650px){
+ .app{height:100dvh;max-width:none;padding:4px 7px;overflow:hidden}
+ .top{height:25px;margin:0 0 3px}
  .brand{display:none}
- h1{font-size:1.1rem;margin:0}
- .monthbar{margin:4px 0 7px}
- .month-title{font-size:clamp(1.2rem,4vh,1.7rem)}
- .nav button{min-height:32px;padding:4px 10px}
- .weekdays div{padding:4px 0}
- .day{min-height:clamp(34px,8vh,58px);padding:2px 0}
- .daynum{width:23px;height:23px;font-size:.8rem}
- .legend{padding:6px 10px;gap:5px 10px}
- .day-events{margin-top:8px}
- .feed iframe{height:50vh}
+ h1{font-size:.95rem;margin:0}
+ .clock{font-size:.6rem}
+ #time{font-size:.75rem}
  .monthbar,.cal-shell,.day-events,.notice{display:none!important}
- .top{height:34px;min-height:34px;margin:0 0 4px!important;gap:8px}
- h1{font-size:1rem!important;line-height:1.2}
- .clock{font-size:.62rem}
- #time{font-size:.82rem}
- .landscape-calendar{display:block!important;width:100%;height:calc(100dvh - 48px);min-height:220px;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:var(--paper);position:relative}
- .landscape-calendar iframe{display:block;width:118%;height:118%;min-height:260px;border:0;transform:scale(.847);transform-origin:top left}
- .app{height:100dvh;min-height:0;overflow:hidden;padding:4px 8px max(4px,env(safe-area-inset-bottom))}
+ .landscape-calendar{display:block;height:calc(100dvh - 35px);width:100%}
+ .landscape-head{height:28px;margin:0}
+ .landscape-title{font-size:clamp(.85rem,2.3vh,1.2rem)}
+ .landscape-head .nav button{min-height:25px;min-width:30px;padding:2px 7px;border-radius:6px;font-size:.8rem}
+ .landscape-grid{height:calc(100% - 28px)}
+ .lwday{font-size:clamp(.55rem,1.5vh,.75rem);padding:2px 0}
+ .lday{padding:2px}
+ .ldaynum{font-size:clamp(.6rem,1.6vh,.78rem);margin-bottom:1px}
+ .levent{font-size:clamp(.48rem,1.25vh,.66rem);line-height:1.08;padding:1px 2px;margin:1px 0}
 }
-@media(min-width:900px){
- .app{padding-top:28px}
- .cal-shell,.day-events{border-radius:18px}
- .day{min-height:clamp(88px,8vw,116px)}
+@media(min-width:1000px) and (pointer:fine){
+ .app{max-width:1600px;padding:20px 24px}
+ .month-title{font-size:2.5rem}
+ .weekdays div{font-size:1rem}
+ .daynum{font-size:1.1rem}
+ .legend-item{font-size:.9rem}
 }
-@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div class="app">
-  <header class="top">
-    <div><div class="brand">COMMUNITY CALENDAR</div><h1>學生月程</h1></div>
-    <div class="clock"><div id="time">--:--:--</div><div id="dateLabel">香港時間</div></div>
-  </header>
-  <div class="monthbar">
-    <div class="month-title" id="monthTitle">載入中…</div>
-    <div class="nav">
-      <button id="prev" aria-label="上一個月">‹</button>
-      <button class="todaybtn" id="today">今天</button>
-      <button id="next" aria-label="下一個月">›</button>
-    </div>
-  </div>
-  <section class="landscape-calendar" id="landscapeCalendar" aria-label="橫向月曆"></section>
-  <section class="cal-shell" aria-label="月曆">
-    <div class="weekdays"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
-    <div class="days" id="days"></div>
-    <div class="legend" id="legend"></div>
-  </section>
-  <section class="day-events">
-    <div class="events-head">
-      <div><h2 id="eventTitle">所選日期的活動</h2><div class="events-date" id="eventDate"></div></div>
-      <a class="google-link" id="openDay" href="https://calendar.google.com/" target="_blank" rel="noopener noreferrer">在 Google Calendar 開啟 ↗</a>
-    </div>
-    <div class="calendar-checks" id="checks"></div>
-    <div class="feed" id="feed"><div class="empty">選擇日期後，會在這裡顯示當日活動。</div></div>
-  </section>
-  <div class="notice">直向模式使用自訂月曆及所選日期活動區；橫向模式會切換為 Google Calendar 月檢視，讓活動名稱及時間直接顯示在日期格內。活動內容由公開 Google Calendar 載入；請先確認公開日曆中的學生資料適合公開。</div>
+<header class="top">
+ <div><div class="brand">COMMUNITY CALENDAR</div><h1>學生月程</h1></div>
+ <div class="clock"><div id="time">--:--:--</div><div id="dateLabel">香港時間</div></div>
+</header>
+<div class="monthbar">
+ <div class="month-title" id="monthTitle">載入中…</div>
+ <div class="nav"><button id="prev" aria-label="上一個月">‹</button><button class="todaybtn" id="today">今天</button><button id="next" aria-label="下一個月">›</button></div>
+</div>
+<section class="landscape-calendar" id="landscapeCalendar">
+ <div class="landscape-head">
+  <div class="landscape-title" id="landscapeTitle"></div>
+  <div class="nav"><button id="lprev" aria-label="上一個月">‹</button><button id="ltoday" class="todaybtn">今天</button><button id="lnext" aria-label="下一個月">›</button></div>
+ </div>
+ <div class="landscape-grid" id="landscapeGrid"></div>
+</section>
+<section class="cal-shell">
+ <div class="weekdays"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
+ <div class="days" id="days"></div><div class="legend" id="legend"></div>
+</section>
+<section class="day-events">
+ <div class="events-head"><div><h2 id="eventTitle">當日活動</h2><div class="events-date" id="eventDate"></div></div><a class="google-link" id="openDay" href="https://calendar.google.com/" target="_blank" rel="noopener noreferrer">在 Google Calendar 開啟 ↗</a></div>
+ <div class="calendar-checks" id="checks"></div><div class="feed" id="feed"></div>
+</section>
+<div class="notice">直向模式以圓點標示有活動的日期；橫向模式只顯示當月日期，並在日期格內顯示活動名稱及時間。活動圓點及活動資料依賴公開 Google Calendar 資料來源及外部轉接服務。</div>
 </div>
 <script>
 const calendars=[
- {name:"全教會",id:"5feb8669918e0c65e45c6debb6dc344a824f7d4bbe53887150df9bf8ed5596e2@group.calendar.google.com",color:"#7CB342"},
- {name:"區",id:"9d0718947251b0ecb937d26521e006c9e458155a8b0542442996ae64112a513e@group.calendar.google.com",color:"#B39DDB"},
- {name:"學生同工",id:"144b428f9fda4934be111d528e42fd6e831abf7880aca0b94576a6f449b5fb60@group.calendar.google.com",color:"#EF746C"},
- {name:"學生周間聚會",id:"6d5e78d1ae879ea7dd573f6193354eae02b085523b874cb0fb30b3736cd6e322@group.calendar.google.com",color:"#FFBF16"},
- {name:"學生生日",id:"640bce4eda2a30e86dfe565dee12ac630bdc9454004d219e3ab359682f722bfe@group.calendar.google.com",color:"#FF9800"},
- {name:"學生聚會",id:"0e5684c7eea55390ead078357f529444010f25599c092a48717bdb6bcbbb217d@group.calendar.google.com",color:"#03A9F4"}
+{name:"全教會",id:"5feb8669918e0c65e45c6debb6dc344a824f7d4bbe53887150df9bf8ed5596e2@group.calendar.google.com",color:"#7CB342"},
+{name:"區",id:"9d0718947251b0ecb937d26521e006c9e458155a8b0542442996ae64112a513e@group.calendar.google.com",color:"#B39DDB"},
+{name:"學生同工",id:"144b428f9fda4934be111d528e42fd6e831abf7880aca0b94576a6f449b5fb60@group.calendar.google.com",color:"#EF746C"},
+{name:"學生周間聚會",id:"6d5e78d1ae879ea7dd573f6193354eae02b085523b874cb0fb30b3736cd6e322@group.calendar.google.com",color:"#FFBF16"},
+{name:"學生生日",id:"640bce4eda2a30e86dfe565dee12ac630bdc9454004d219e3ab359682f722bfe@group.calendar.google.com",color:"#FF9800"},
+{name:"學生聚會",id:"0e5684c7eea55390ead078357f529444010f25599c092a48717bdb6bcbbb217d@group.calendar.google.com",color:"#03A9F4"}
 ];
 const enabled=new Set(calendars.map(c=>c.id));
-const nowHK=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Hong_Kong"}));
-let todayDate=nowHK(), shown=new Date(todayDate.getFullYear(),todayDate.getMonth(),1), selected=new Date(todayDate.getFullYear(),todayDate.getMonth(),todayDate.getDate());
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,"0");
-const dateKey=d=>`${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
-const dateText=d=>new Intl.DateTimeFormat("zh-Hant-HK",{timeZone:"Asia/Hong_Kong",year:"numeric",month:"long",day:"numeric",weekday:"long"}).format(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),4)));
-function updateClock(){
- const n=new Date();
- $("time").textContent=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Hong_Kong",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(n);
- $("dateLabel").textContent=new Intl.DateTimeFormat("zh-Hant-HK",{timeZone:"Asia/Hong_Kong",year:"numeric",month:"short",day:"numeric",weekday:"short"}).format(n);
+const key=d=>`${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+const nowHK=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Hong_Kong"}));
+let today=nowHK(),shown=new Date(today.getFullYear(),today.getMonth(),1),selected=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+let eventsByDate=new Map(),dotsByDate=new Map();
+const dayNames=["日","一","二","三","四","五","六"];
+function dateLabel(d){return new Intl.DateTimeFormat("zh-Hant-HK",{timeZone:"Asia/Hong_Kong",year:"numeric",month:"long",day:"numeric",weekday:"long"}).format(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),4)))}
+function updateClock(){let n=new Date();$("time").textContent=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Hong_Kong",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(n);$("dateLabel").textContent=new Intl.DateTimeFormat("zh-Hant-HK",{timeZone:"Asia/Hong_Kong",year:"numeric",month:"short",day:"numeric",weekday:"short"}).format(n)}
+function monthName(d){return new Intl.DateTimeFormat("zh-Hant-HK",{year:"numeric",month:"long"}).format(new Date(d.getFullYear(),d.getMonth(),15))}
+function addEvent(d,e){let k=key(d);if(!eventsByDate.has(k))eventsByDate.set(k,[]);eventsByDate.get(k).push(e);if(!dotsByDate.has(k))dotsByDate.set(k,new Set());dotsByDate.get(k).add(e.calendarId)}
+function parseDate(v){let m=(v||"").match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})Z?)?/);if(!m)return null;return {date:new Date(+m[1],+m[2]-1,+m[3]),allDay:!m[4],hour:+(m[4]||0),minute:+(m[5]||0),utc:!!(m[4]&&v.endsWith("Z"))}}
+function formatTime(p){if(!p||p.allDay)return "全日";let h=p.hour;if(p.utc)h=(h+8)%24;return `${pad(h)}:${pad(p.minute)}`}
+function unescapeICS(s){return (s||"").replace(/\\n/gi," ").replace(/\\,/g,",").replace(/\\;/g,";").replace(/\\\\/g,"\\")}
+function parseEventBlock(block,c,monthStart,monthEnd){
+ const lines=block.split(/\r?\n/),props={};
+ for(const line of lines){const i=line.indexOf(":");if(i<0)continue;const k=line.slice(0,i).split(";")[0];if(["DTSTART","DTEND","SUMMARY","RRULE","EXDATE"].includes(k))props[k]=line.slice(i+1)}
+ const start=parseDate(props.DTSTART);if(!start)return;
+ const title=unescapeICS(props.SUMMARY)||"(沒有活動名稱)";
+ const duration=props.DTEND?Math.max(0,Math.round((parseDate(props.DTEND)?.date-start.date)/86400000)):0;
+ const rule=props.RRULE||"";
+ const add=d=>{
+  const span=start.allDay?Math.max(1,duration):1;
+  for(let offset=0;offset<span;offset++){
+   const day=new Date(d.getFullYear(),d.getMonth(),d.getDate()+offset);
+   if(day>=monthStart&&day<monthEnd){let e={title,time:formatTime(start),calendarId:c.id,color:c.color,allDay:start.allDay};addEvent(day,e)}
+  }
+ };
+ if(!rule){add(start.date);return}
+ const parts={};rule.split(";").forEach(x=>{let i=x.indexOf("=");if(i>0)parts[x.slice(0,i)]=x.slice(i+1)});
+ const freq=parts.FREQ,interval=Math.max(1,+(parts.INTERVAL||1)),until=parts.UNTIL?parseDate(parts.UNTIL)?.date:null,byday=(parts.BYDAY||"").split(",").map(x=>x.slice(-2)).filter(Boolean),codes=["SU","MO","TU","WE","TH","FR","SA"];
+ let stop=until&&until<monthEnd?new Date(until.getFullYear(),until.getMonth(),until.getDate()+1):monthEnd;
+ if(freq==="DAILY"){for(let d=new Date(start.date);d<stop;d.setDate(d.getDate()+1)){let n=Math.round((d-start.date)/86400000);if(n>=0&&n%interval===0)add(new Date(d))}}
+ else if(freq==="WEEKLY"){for(let d=new Date(Math.max(start.date,monthStart));d<stop;d.setDate(d.getDate()+1)){let week=Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay())-new Date(start.date.getFullYear(),start.date.getMonth(),start.date.getDate()-start.date.getDay()))/604800000);if(week>=0&&week%interval===0&&(byday.length?byday:[codes[start.date.getDay()]]).includes(codes[d.getDay()]))add(new Date(d))}}
+ else if(freq==="MONTHLY"){for(let y=monthStart.getFullYear(),m=monthStart.getMonth();y<stop.getFullYear()||(y===stop.getFullYear()&&m<=stop.getMonth());){let d=new Date(y,m,start.date.getDate()),diff=(y-start.date.getFullYear())*12+(m-start.date.getMonth());if(diff>=0&&diff%interval===0&&d.getMonth()===m)add(d);m++;if(m>11){m=0;y++}}}
+ else add(start.date);
+}
+async function fetchCalendarText(ics){
+ const targets=[
+  `https://api.allorigins.win/raw?url=${encodeURIComponent(ics)}`,
+  `https://corsproxy.io/?url=${encodeURIComponent(ics)}`,
+  `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(ics)}`
+ ];
+ let lastError;
+ for(const target of targets){
+  try{const res=await fetch(target);if(!res.ok)throw new Error(`HTTP ${res.status}`);const text=await res.text();if(!text.includes("BEGIN:VCALENDAR"))throw new Error("Invalid calendar feed");return text}
+  catch(err){lastError=err;}
+ }
+ throw lastError||new Error("Calendar feed unavailable");
+}
+async function loadEvents(){
+ eventsByDate=new Map();dotsByDate=new Map();
+ const ms=new Date(shown.getFullYear(),shown.getMonth(),1),me=new Date(shown.getFullYear(),shown.getMonth()+1,1);
+ await Promise.all(calendars.filter(c=>enabled.has(c.id)).map(async c=>{
+  try{
+   const ics=`https://calendar.google.com/calendar/ical/${encodeURIComponent(c.id)}/public/basic.ics`;
+   const text=(await fetchCalendarText(ics)).replace(/\r?\n[ \t]/g,"");
+   text.split("BEGIN:VEVENT").slice(1).forEach(b=>parseEventBlock(b.split("END:VEVENT")[0],c,ms,me));
+  }catch(err){console.warn("無法讀取日曆："+c.name,err)}
+ }));
+ for(const [k,arr] of eventsByDate)arr.sort((a,b)=>a.time.localeCompare(b.time));
+ renderPortrait();renderLandscape();
 }
 function renderLegend(){
  $("legend").innerHTML="";
- calendars.forEach(c=>{
-  const item=document.createElement("div");item.className="legend-item";
-  item.innerHTML=`<span class="mark" style="background:${c.color}"></span><span>${c.name}</span>`;
-  $("legend").append(item);
- });
+ calendars.forEach(c=>{let el=document.createElement("div");el.className="legend-item";el.innerHTML=`<span class="mark" style="background:${c.color}"></span><span>${c.name}</span>`;$("legend").append(el)});
  $("checks").innerHTML="";
- calendars.forEach(c=>{
-  const label=document.createElement("label");label.className="check";
-  const input=document.createElement("input");input.type="checkbox";input.checked=enabled.has(c.id);
-  input.addEventListener("change",()=>{input.checked?enabled.add(c.id):enabled.delete(c.id);renderDays();renderLandscapeCalendar();loadMonthDots();});
-  const dot=document.createElement("span");dot.className="mark";dot.style.background=c.color;
-  const name=document.createElement("span");name.textContent=c.name;
-  label.append(input,dot,name);$("checks").append(label);
- });
+ calendars.forEach(c=>{let label=document.createElement("label");label.className="check";let input=document.createElement("input");input.type="checkbox";input.checked=enabled.has(c.id);input.addEventListener("change",()=>{input.checked?enabled.add(c.id):enabled.delete(c.id);renderPortrait();renderLandscape();renderSelected();loadEvents()});let dot=document.createElement("span");dot.className="mark";dot.style.background=c.color;let name=document.createElement("span");name.textContent=c.name;label.append(input,dot,name);$("checks").append(label)});
 }
-function renderLandscapeCalendar(){
- const host=$("landscapeCalendar");
- if(!host)return;
- host.innerHTML="";
- if(!enabled.size){
-  host.innerHTML='<div class="empty">請先選擇至少一個日曆。</div>';return;
- }
- const url=new URL("https://calendar.google.com/calendar/embed");
- url.searchParams.set("mode","MONTH");
- url.searchParams.set("ctz","Asia/Hong_Kong");
- url.searchParams.set("showTitle","0");
- url.searchParams.set("showTabs","0");
- url.searchParams.set("showPrint","0");
- url.searchParams.set("showCalendars","0");
- url.searchParams.set("showTz","0");
- url.searchParams.set("bgcolor","#fffdf9");
- calendars.filter(c=>enabled.has(c.id)).forEach(c=>{
-  url.searchParams.append("src",c.id);
-  url.searchParams.append("color",c.color);
- });
- const iframe=document.createElement("iframe");
- iframe.title="橫向月曆：顯示活動名稱及時間";
- iframe.src=url.toString();
- iframe.loading="lazy";
- host.append(iframe);
+function makeDot(d){
+ const wrap=document.createElement("span");wrap.className="marks";
+ const dayEvents=(eventsByDate.get(key(d))||[]).filter(e=>enabled.has(e.calendarId));
+ const seenBars=new Set();
+ dayEvents.filter(e=>e.allDay).forEach(e=>{const unique=e.calendarId+"|"+e.title;if(seenBars.has(unique))return;seenBars.add(unique);const bar=document.createElement("span");bar.className="all-day-mark";bar.style.background=e.color;bar.title=e.title;wrap.append(bar)});
+ const timedCalendars=new Set(dayEvents.filter(e=>!e.allDay).map(e=>e.calendarId));
+ if(timedCalendars.size){const row=document.createElement("span");row.className="dot-row";timedCalendars.forEach(id=>{const c=calendars.find(x=>x.id===id);if(c){const dot=document.createElement("span");dot.className="mark";dot.style.background=c.color;dot.title=c.name;row.append(dot)}});wrap.append(row)}
+ return wrap;
 }
-
-const eventDates = new Map(); // date key -> set of calendar IDs
-const monthFetchCache = new Map();
-function addEventDate(key, calendarId){
- if(!eventDates.has(key))eventDates.set(key,new Set());
- eventDates.get(key).add(calendarId);
+function renderPortrait(){
+ $("monthTitle").textContent=monthName(shown);let first=new Date(shown.getFullYear(),shown.getMonth(),1).getDay(),count=new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate(),host=$("days");host.innerHTML="";
+ for(let i=0;i<first;i++){let b=document.createElement("div");b.className="day blank";host.append(b)}
+ for(let d=1;d<=count;d++){let date=new Date(shown.getFullYear(),shown.getMonth(),d),b=document.createElement("button");b.className="day";if(date.toDateString()===selected.toDateString())b.classList.add("selected");if(date.toDateString()===today.toDateString())b.classList.add("today");let n=document.createElement("span");n.className="daynum";n.textContent=d;b.append(n,makeDot(date));b.addEventListener("click",()=>{selected=date;renderPortrait();renderSelected()});host.append(b)}
+ renderSelected();
 }
-function parseIcsDate(value){
- const m=(value||"").match(/^(\d{4})(\d{2})(\d{2})/);
- if(!m)return null;
- return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+function renderSelected(){
+ $("eventTitle").textContent="當日活動";$("eventDate").textContent=dateLabel(selected);$("feed").innerHTML="";
+ let url=new URL("https://calendar.google.com/calendar/embed");url.searchParams.set("mode","AGENDA");url.searchParams.set("ctz","Asia/Hong_Kong");url.searchParams.set("showTitle","0");url.searchParams.set("showTabs","0");url.searchParams.set("showPrint","0");url.searchParams.set("showCalendars","0");url.searchParams.set("showTz","0");url.searchParams.set("dates",`${key(selected)}/${key(new Date(selected.getFullYear(),selected.getMonth(),selected.getDate()+1))}`);
+ calendars.filter(c=>enabled.has(c.id)).forEach(c=>{url.searchParams.append("src",c.id);url.searchParams.append("color",c.color)});$("openDay").href=url.toString();
+ if(!enabled.size){$("feed").innerHTML='<div class="empty">請先選擇至少一個日曆。</div>';return}
+ let iframe=document.createElement("iframe");iframe.title="所選日期的 Google Calendar 活動";iframe.src=url.toString();iframe.loading="lazy";$("feed").append(iframe);
 }
-function expandIcsEvent(start, rule, monthStart, monthEnd, calendarId){
- if(!start)return;
- const addIfInMonth=d=>{
-  if(d>=monthStart && d<monthEnd)addEventDate(dateKey(d),calendarId);
- };
- if(!rule){addIfInMonth(start);return;}
- const parts={};
- rule.split(";").forEach(p=>{const i=p.indexOf("=");if(i>0)parts[p.slice(0,i)]=p.slice(i+1);});
- const freq=parts.FREQ;
- const interval=Math.max(1,Number(parts.INTERVAL||1));
- const until=parts.UNTIL?parseIcsDate(parts.UNTIL):null;
- const byday=(parts.BYDAY||"").split(",").filter(Boolean).map(x=>x.slice(-2));
- const dayCodes=["SU","MO","TU","WE","TH","FR","SA"];
- const stop=until&&until<monthEnd?new Date(until.getFullYear(),until.getMonth(),until.getDate()+1):monthEnd;
- if(freq==="DAILY"){
-  for(let d=new Date(start);d<stop;d.setDate(d.getDate()+1)){
-   const days=Math.floor((d-start)/86400000);
-   if(days>=0 && days%interval===0)addIfInMonth(new Date(d));
-  }
- }else if(freq==="WEEKLY"){
-  for(let d=new Date(Math.max(start.getTime(),monthStart.getTime()));d<stop;d.setDate(d.getDate()+1)){
-   const week=Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay())-new Date(start.getFullYear(),start.getMonth(),start.getDate()-start.getDay()))/604800000);
-   const allowed=byday.length?byday:[dayCodes[start.getDay()]];
-   if(week>=0 && week%interval===0 && allowed.includes(dayCodes[d.getDay()]))addIfInMonth(new Date(d));
-  }
- }else if(freq==="MONTHLY"){
-  for(let y=monthStart.getFullYear(),m=monthStart.getMonth();y<stop.getFullYear() || (y===stop.getFullYear()&&m<=stop.getMonth());){
-   const d=new Date(y,m,start.getDate());
-   const diff=(y-start.getFullYear())*12+(m-start.getMonth());
-   if(diff>=0&&diff%interval===0&&d.getMonth()===m)addIfInMonth(d);
-   m++;if(m>11){m=0;y++;}
-  }
- }else{
-  addIfInMonth(start);
- }
-}
-async function loadMonthDots(){
- eventDates.clear();
- const monthStart=new Date(shown.getFullYear(),shown.getMonth(),1);
- const monthEnd=new Date(shown.getFullYear(),shown.getMonth()+1,1);
- const jobs=calendars.filter(c=>enabled.has(c.id)).map(async c=>{
-  try{
-   const ics=`https://calendar.google.com/calendar/ical/${encodeURIComponent(c.id)}/public/basic.ics`;
-   const proxy=`https://api.allorigins.win/raw?url=${encodeURIComponent(ics)}`;
-   const response=await fetch(proxy,{cache:"no-store"});
-   if(!response.ok)throw new Error("Calendar feed unavailable");
-   let text=await response.text();
-   text=text.replace(/\r?\n[ \t]/g,"");
-   const blocks=text.split("BEGIN:VEVENT").slice(1);
-   for(const block of blocks){
-    const content=block.split("END:VEVENT")[0];
-    const startLine=content.match(/^DTSTART[^:]*:(.+)$/m);
-    if(!startLine)continue;
-    const start=parseIcsDate(startLine[1].trim());
-    if(!start)continue;
-    const ruleLine=content.match(/^RRULE:(.+)$/m);
-    expandIcsEvent(start,ruleLine?ruleLine[1].trim():null,monthStart,monthEnd,c.id);
-   }
-  }catch(e){
-   console.warn("Could not load calendar dots for",c.name,e);
-  }
- });
- await Promise.all(jobs);
- renderDays();
-}
-function renderDays(){
- $("monthTitle").textContent=new Intl.DateTimeFormat("zh-Hant-HK",{year:"numeric",month:"long"}).format(new Date(shown.getFullYear(),shown.getMonth(),15));
- const first=new Date(shown.getFullYear(),shown.getMonth(),1).getDay();
- const count=new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate();
- const container=$("days");container.innerHTML="";
- for(let i=0;i<first;i++){const blank=document.createElement("div");blank.className="day blank";container.append(blank);}
+function renderLandscape(){
+ $("landscapeTitle").textContent=monthName(shown);
+ const host=$("landscapeGrid");host.innerHTML="";
+ const first=new Date(shown.getFullYear(),shown.getMonth(),1).getDay(),count=new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate(),weeks=Math.ceil((first+count)/7);
+ host.style.setProperty("--weeks",weeks);
+ dayNames.forEach(n=>{let h=document.createElement("div");h.className="lwday";h.textContent=n;host.append(h)});
+ for(let i=0;i<first;i++){let blank=document.createElement("div");blank.className="lday";blank.style.background="#fbf8f3";host.append(blank)}
  for(let d=1;d<=count;d++){
-  const date=new Date(shown.getFullYear(),shown.getMonth(),d);
-  const b=document.createElement("button");b.className="day";
-  if(date.toDateString()===selected.toDateString())b.classList.add("selected");
-  if(date.toDateString()===todayDate.toDateString())b.classList.add("today");
-  b.setAttribute("aria-label",dateText(date));
-  const num=document.createElement("span");num.className="daynum";num.textContent=d;b.append(num);
-  const marks=document.createElement("span");marks.className="marks";
-  const ids=eventDates.get(dateKey(date));
-  if(ids){
-   calendars.filter(c=>enabled.has(c.id)&&ids.has(c.id)).forEach(c=>{
-    const dot=document.createElement("span");dot.className="mark";dot.style.background=c.color;dot.setAttribute("aria-label",c.name);marks.append(dot);
-   });
-  }
-  b.append(marks);
-  b.addEventListener("click",()=>{selected=date;renderDays();renderSelectedDay();});
-  container.append(b);
+  let date=new Date(shown.getFullYear(),shown.getMonth(),d),cell=document.createElement("div");cell.className="lday";
+  if(date.toDateString()===today.toDateString())cell.classList.add("today");
+  let num=document.createElement("div");num.className="ldaynum";num.textContent=d;cell.append(num);
+  const ev=(eventsByDate.get(key(date))||[]).filter(e=>enabled.has(e.calendarId));
+  ev.slice(0,5).forEach(e=>{let pill=document.createElement("div");pill.className="levent";pill.style.background=e.color+"55";pill.style.borderLeft="3px solid "+e.color;let time=document.createElement("span");time.className="etime";time.textContent=e.allDay?"全日":e.time+" ";let title=document.createElement("span");title.textContent=e.title;pill.append(time,title);cell.append(pill)});
+  if(ev.length>5){let more=document.createElement("div");more.className="levent";more.textContent=`另有 ${ev.length-5} 項`;cell.append(more)}
+  host.append(cell);
  }
- renderSelectedDay();
+ while(host.children.length<(weeks+1)*7){let blank=document.createElement("div");blank.className="lday";blank.style.background="#fbf8f3";host.append(blank)}
 }
-function renderSelectedDay(){
- $("eventTitle").textContent="當日活動";
- $("eventDate").textContent=dateText(selected);
- $("feed").innerHTML="";
- const url=new URL("https://calendar.google.com/calendar/embed");
- url.searchParams.set("mode","AGENDA");
- url.searchParams.set("ctz","Asia/Hong_Kong");
- url.searchParams.set("showTitle","0");
- url.searchParams.set("showTabs","0");
- url.searchParams.set("showPrint","0");
- url.searchParams.set("showCalendars","0");
- url.searchParams.set("showTz","0");
- url.searchParams.set("dates",`${dateKey(selected)}/${dateKey(new Date(selected.getFullYear(),selected.getMonth(),selected.getDate()+1))}`);
- calendars.filter(c=>enabled.has(c.id)).forEach(c=>{url.searchParams.append("src",c.id);url.searchParams.append("color",c.color);});
- $("openDay").href=url.toString();
- if(!enabled.size){
-  $("feed").innerHTML='<div class="empty">請先選擇至少一個日曆。</div>';return;
- }
- const iframe=document.createElement("iframe");
- iframe.title="所選日期的 Google Calendar 活動";
- iframe.src=url.toString();
- iframe.loading="lazy";
- iframe.style.cssText="display:block;width:100%;height:360px;border:0;background:transparent";
- $("feed").append(iframe);
-}
-$("prev").addEventListener("click",()=>{shown=new Date(shown.getFullYear(),shown.getMonth()-1,1);selected=new Date(shown.getFullYear(),shown.getMonth(),Math.min(selected.getDate(),new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate()));renderDays();loadMonthDots();});
-$("next").addEventListener("click",()=>{shown=new Date(shown.getFullYear(),shown.getMonth()+1,1);selected=new Date(shown.getFullYear(),shown.getMonth(),Math.min(selected.getDate(),new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate()));renderDays();loadMonthDots();});
-$("today").addEventListener("click",()=>{todayDate=nowHK();shown=new Date(todayDate.getFullYear(),todayDate.getMonth(),1);selected=new Date(todayDate.getFullYear(),todayDate.getMonth(),todayDate.getDate());renderDays();loadMonthDots();});
-renderLegend();renderDays();renderLandscapeCalendar();loadMonthDots();updateClock();setInterval(updateClock,1000);
+function shiftMonth(delta){shown=new Date(shown.getFullYear(),shown.getMonth()+delta,1);selected=new Date(shown.getFullYear(),shown.getMonth(),Math.min(selected.getDate(),new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate()));renderPortrait();renderLandscape();loadEvents()}
+function goToday(){today=nowHK();shown=new Date(today.getFullYear(),today.getMonth(),1);selected=new Date(today.getFullYear(),today.getMonth(),today.getDate());renderPortrait();renderLandscape();loadEvents()}
+$("prev").addEventListener("click",()=>shiftMonth(-1));$("next").addEventListener("click",()=>shiftMonth(1));$("today").addEventListener("click",goToday);
+$("lprev").addEventListener("click",()=>shiftMonth(-1));$("lnext").addEventListener("click",()=>shiftMonth(1));$("ltoday").addEventListener("click",goToday);
+renderLegend();renderPortrait();renderLandscape();updateClock();setInterval(updateClock,1000);loadEvents();
 </script>
 </body>
 </html>
