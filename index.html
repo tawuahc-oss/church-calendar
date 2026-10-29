@@ -124,6 +124,7 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
  .lday.today .ldaynum{width:22px;height:22px}
  .levent{font-size:clamp(.68rem,1.55vh,.9rem);line-height:1.2;padding:3px 4px;margin:1px 0}
  .levent.timed-event{padding:1px 0;gap:3px}
+ .event-dot{width:5px;height:5px;min-width:5px}
 }
 @media (orientation:landscape) and (max-height:430px){
  .landscape-checks{height:28px}
@@ -195,7 +196,7 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
  <div class="feed" id="feed"></div>
 </section>
 
-<div class="notice">直向模式以圓點標示有活動的日期；橫向模式及桌面版會顯示活動名稱及時間。可用上方類別選項篩選活動。活動資料依賴公開 Google Calendar 資料來源及外部轉接服務。</div>
+<div class="notice">直向模式以圓點標示有活動的日期；橫向模式及桌面版會顯示活動名稱及時間。可用上方類別選項篩選活動。活動資料依賴公開日曆資料來源及外部轉接服務。</div>
 </div>
 
 <script>
@@ -206,7 +207,7 @@ const calendars=[
  {name:"學生周間聚會",id:"6d5e78d1ae879ea7dd573f6193354eae02b085523b874cb0fb30b3736cd6e322@group.calendar.google.com",color:"#FFBF16"},
  {name:"學生生日",id:"640bce4eda2a30e86dfe565dee12ac630bdc9454004d219e3ab359682f722bfe@group.calendar.google.com",color:"#FF9800"},
  {name:"學生聚會",id:"0e5684c7eea55390ead078357f529444010f25599c092a48717bdb6bcbbb217d@group.calendar.google.com",color:"#03A9F4"},
- {name:"香港節慶假日",id:"zh-hk.hong_kong#holiday@group.v.calendar.google.com",color:"#D95D39"}
+ {name:"香港節慶假日",id:"hk-public-holidays",feedUrl:"http://www.1823.gov.hk/common/ical/gc/tc.ics",color:"#D95D39"}
 ];
 
 const enabled=new Set(calendars.map(c=>c.id));
@@ -226,7 +227,10 @@ const dayNames=["日","一","二","三","四","五","六"];
 function dateLabel(d){
  return new Intl.DateTimeFormat("zh-Hant-HK",{
   timeZone:"Asia/Hong_Kong",
-  year:"numeric",month:"long",day:"numeric",weekday:"long"
+  year:"numeric",
+  month:"long",
+  day:"numeric",
+  weekday:"long"
  }).format(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),4)));
 }
 
@@ -246,7 +250,8 @@ function toggleTheme(){
 
 function monthName(d){
  return new Intl.DateTimeFormat("zh-Hant-HK",{
-  year:"numeric",month:"long"
+  year:"numeric",
+  month:"long"
  }).format(new Date(d.getFullYear(),d.getMonth(),15));
 }
 
@@ -287,6 +292,7 @@ function parseICSEvent(block){
  for(const line of block.split(/\r?\n/)){
   const i=line.indexOf(":");
   if(i<0)continue;
+
   const left=line.slice(0,i);
   const value=line.slice(i+1);
   const name=left.split(";")[0].toUpperCase();
@@ -302,6 +308,7 @@ function parseICSEvent(block){
  const ruleProp=first("RRULE");
  const statusProp=first("STATUS");
  const ridProp=first("RECURRENCE-ID");
+
  const start=startProp?parseDate(startProp.value):null;
  const end=endProp?parseDate(endProp.value):null;
 
@@ -314,7 +321,9 @@ function parseICSEvent(block){
  });
 
  return {
-  props,start,end,
+  props,
+  start,
+  end,
   title:unescapeICS(summaryProp?.value)||"(沒有活動名稱)",
   rule:ruleProp?.value||"",
   status:(statusProp?.value||"").toUpperCase(),
@@ -402,7 +411,7 @@ function expandCalendarEvent(c,event,monthStart,monthEnd,excludedDates){
    if(diff>=0&&diff%interval===0&&d.getMonth()===m)add(d);
 
    m++;
-   if(m>11){m=0;y++}
+   if(m>11){m=0;y++;}
   }
  }else{
   add(event.start.date);
@@ -413,8 +422,7 @@ function parseCalendarEvents(text,c,monthStart,monthEnd){
  const blocks=text.split("BEGIN:VEVENT").slice(1).map(b=>b.split("END:VEVENT")[0]);
  const parsed=blocks.map(parseICSEvent).filter(e=>e.start);
 
- // EXDATE 代表整個重複系列中的指定日期不舉行活動。
- // RECURRENCE-ID 代表重複系列中被個別取消或修改的場次。
+ // EXDATE及個別重複場次的例外記錄會排除原本自動展開的活動。
  const excluded=new Set();
 
  parsed.forEach(e=>{
@@ -422,17 +430,14 @@ function parseCalendarEvents(text,c,monthStart,monthEnd){
   if(e.recurrenceId)excluded.add(key(e.recurrenceId.date));
  });
 
- // 先展開主系列，並排除取消或修改的原始場次。
  parsed.forEach(e=>{
-  if(!e.recurrenceId){
+  if(e.recurrenceId){
+   // 已取消的場次不顯示；修改過日期的場次則顯示在新日期。
+   if(e.status!=="CANCELLED"&&e.start.date>=monthStart&&e.start.date<monthEnd){
+    addCalendarEvent(c,e,e.start.date,monthStart,monthEnd);
+   }
+  }else{
    expandCalendarEvent(c,e,monthStart,monthEnd,excluded);
-  }
- });
-
- // 再加回有被修改的新場次；已取消的場次不會加回。
- parsed.forEach(e=>{
-  if(e.recurrenceId&&e.status!=="CANCELLED"){
-   addCalendarEvent(c,e,e.start.date,monthStart,monthEnd);
   }
  });
 }
@@ -473,7 +478,10 @@ async function loadEvents(){
 
  await Promise.all(calendars.filter(c=>enabled.has(c.id)).map(async c=>{
   try{
-   const ics=`https://calendar.google.com/calendar/ical/${encodeURIComponent(c.id)}/public/basic.ics`;
+   // 香港節慶假日使用政府 ICS；其他日曆使用 Google Calendar ICS。
+   const ics=c.feedUrl||
+    `https://calendar.google.com/calendar/ical/${encodeURIComponent(c.id)}/public/basic.ics`;
+
    const text=(await fetchCalendarText(ics)).replace(/\r?\n[ \t]/g,"");
    parseCalendarEvents(text,c,ms,me);
   }catch(err){
@@ -481,8 +489,6 @@ async function loadEvents(){
   }
  }));
 
- // 全日活動優先；全日活動按類別排序。
- // 有時間的活動按時間排序；時間相同時才按類別排序。
  const categoryPriority=[
   "學生生日",
   "香港節慶假日",
@@ -669,7 +675,8 @@ function renderSelected(){
   `${key(selected)}/${key(new Date(selected.getFullYear(),selected.getMonth(),selected.getDate()+1))}`
  );
 
- calendars.filter(c=>enabled.has(c.id)).forEach(c=>{
+ // 外部政府 ICS 不是 Google Calendar ID，因此不傳入 Google 的嵌入視窗。
+ calendars.filter(c=>enabled.has(c.id)&&!c.feedUrl).forEach(c=>{
   url.searchParams.append("src",c.id);
   url.searchParams.append("color",c.color);
  });
