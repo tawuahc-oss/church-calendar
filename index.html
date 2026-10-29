@@ -18,7 +18,12 @@ button,input{font:inherit}
 button{touch-action:manipulation}
 .app{max-width:1500px;margin:auto;padding:clamp(8px,2vw,24px);min-width:0}
 .theme-toggle{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:9px;padding:6px 10px;font-size:.8rem;font-weight:750;white-space:nowrap;cursor:pointer}
-.top-actions{display:flex;align-items:center;gap:12px}
+.top-actions{display:flex;align-items:center;gap:10px}
+.loading-status{display:none;align-items:center;gap:6px;color:var(--muted);font-size:.76rem;white-space:nowrap}
+.loading-status.active{display:inline-flex}
+.loading-spinner{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.loading-spinner{animation-duration:2s}}
 body[data-theme="night"]{--bg:#17191f;--paper:#22252d;--ink:#eee8df;--muted:#b3a89a;--line:#41434b;--accent:#c49a70;background:var(--bg);color:var(--ink)}
 body[data-theme="night"] .weekdays,body[data-theme="night"] .lwday{background:#30313a;color:#d6c7b6}
 body[data-theme="night"] .day.blank,body[data-theme="night"] .lday[style*="background"]{background:#1d2027!important}
@@ -99,10 +104,7 @@ body[data-theme="night"] .feed iframe{background:#17191f}
 .lday:nth-child(7n){border-right:0}
 .ldaynum{font-size:clamp(.68rem,.9vw,.9rem);font-weight:750;margin-bottom:2px}
 .lday.today .ldaynum{display:inline-flex;background:var(--accent);color:white;border-radius:50%;width:20px;height:20px;align-items:center;justify-content:center}
-.levent{font-size:clamp(.68rem,.82vw,.88rem);line-height:1.22;border-radius:3px;padding:3px 4px;margin:1px 0;overflow-wrap:anywhere;word-break:break-word;color:var(--ink);background:transparent;flex-shrink:0}
-.levent.allday-event{color:#2f2b26;background:var(--event-color);border-left:0!important;border-radius:3px;padding:3px 4px}
-.levent.timed-event{display:flex;align-items:flex-start;gap:4px;padding:2px 1px;margin:1px 0}
-.event-dot{display:inline-block;width:.9em;height:.9em;min-width:.9em;border-radius:50%;margin-top:.12em;flex-shrink:0}
+.levent{font-size:clamp(.68rem,.82vw,.88rem);line-height:1.22;border-radius:3px;padding:3px 4px;margin:1px 0;overflow-wrap:anywhere;word-break:break-word;color:var(--ink);background:transparent;flex-shrink:0}.levent.allday-event{color:#2f2b26;background:var(--event-color);border-left:0!important;border-radius:3px;padding:3px 4px}.levent.timed-event{display:flex;align-items:flex-start;gap:4px;padding:2px 1px;margin:1px 0}.event-dot{display:inline-block;width:.9em;height:.9em;min-width:.9em;border-radius:50%;margin-top:.12em;flex-shrink:0}
 .levent .etime{font-weight:750;white-space:nowrap}
 .landscape-empty{font-size:.8rem;color:var(--muted);padding:10px}
 .landscape-checks{padding:4px 0;gap:4px;border:0;overflow-x:auto;flex-wrap:nowrap;white-space:nowrap}
@@ -143,16 +145,13 @@ body[data-theme="night"] .feed iframe{background:#17191f}
  .lday{padding:3px}
  .ldaynum{font-size:clamp(.78rem,1.8vh,1rem);margin-bottom:2px;flex-shrink:0}
  .lday.today .ldaynum{width:22px;height:22px}
- .levent{font-size:clamp(.68rem,1.55vh,.9rem);line-height:1.2;padding:3px 4px;margin:1px 0}
- .levent.timed-event{padding:1px 0;gap:3px}
- .event-dot{width:5px;height:5px;min-width:5px}
+ .levent{font-size:clamp(.68rem,1.55vh,.9rem);line-height:1.2;padding:3px 4px;margin:1px 0}.levent.timed-event{padding:1px 0;gap:3px}.event-dot{width:5px;height:5px;min-width:5px}
 }
 @media (orientation:landscape) and (max-height:430px){
  .landscape-checks{height:28px}
  .landscape-grid{height:calc(100% - 57px)}
  .landscape-checks .check{font-size:.65rem;padding:3px 5px}
- .levent{font-size:clamp(.62rem,1.45vh,.78rem);padding:2px 3px}
- .levent.timed-event{padding:1px 0}
+ .levent{font-size:clamp(.62rem,1.45vh,.78rem);padding:2px 3px}.levent.timed-event{padding:1px 0}
 }
 @media(min-width:1000px) and (pointer:fine) and (orientation:portrait){
  .app{max-width:1600px;padding:20px 24px}
@@ -166,11 +165,12 @@ body[data-theme="night"] .feed iframe{background:#17191f}
 <body>
 <div class="app">
 <header class="top">
- <div>
-  <div class="brand">THE CHURCH OF GOD IN HONG KONG</div>
-  <h1>北區學生月程</h1>
- </div>
+ <div><div class="brand">THE CHURCH OF GOD IN HONG KONG</div><h1>北區學生月程</h1></div>
  <div class="top-actions">
+  <span class="loading-status" id="loadingStatus" role="status" aria-live="polite">
+   <span class="loading-spinner" aria-hidden="true"></span>
+   <span id="loadingText">載入活動…</span>
+  </span>
   <button class="theme-toggle" id="themeToggle" type="button" aria-label="切換日間及夜間模式">🌙 夜間</button>
  </div>
 </header>
@@ -198,9 +198,7 @@ body[data-theme="night"] .feed iframe{background:#17191f}
 </section>
 
 <section class="cal-shell">
- <div class="weekdays">
-  <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
- </div>
+ <div class="weekdays"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
  <div class="days" id="days"></div>
  <div class="legend" id="legend"></div>
 </section>
@@ -228,7 +226,7 @@ body[data-theme="night"] .feed iframe{background:#17191f}
  </div>
 </div>
 
-<div class="notice">直向模式以圓點標示有活動的日期；橫向模式及桌面版會顯示活動名稱及時間。可用上方類別選項篩選活動。活動資料依賴公開日曆資料來源及外部轉接服務。</div>
+<div class="notice">直向模式以圓點標示有活動的日期；橫向模式在桌面及手機橫向時使用同一款月曆；可用上方類別選項篩選活動。活動資料依賴公開 Google Calendar 資料來源及外部轉接服務。</div>
 </div>
 
 <script>
@@ -251,15 +249,25 @@ const nowHK=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Hong_
 let today=nowHK();
 let shown=new Date(today.getFullYear(),today.getMonth(),1);
 let selected=new Date(today.getFullYear(),today.getMonth(),today.getDate());
-let eventsByDate=new Map();
-let dotsByDate=new Map();
+let eventsByDate=new Map(),dotsByDate=new Map();
+let loadSequence=0;
+
+const FEED_CACHE_TTL=5*60*1000;
+const feedMemoryCache=new Map();
+const feedRequests=new Map();
+
+function setLoading(active){
+ const el=$("loadingStatus");
+ if(!el)return;
+ el.classList.toggle("active",active);
+ el.setAttribute("aria-hidden",String(!active));
+}
 
 const dayNames=["日","一","二","三","四","五","六"];
 
 function dateLabel(d){
  return new Intl.DateTimeFormat("zh-Hant-HK",{
-  timeZone:"Asia/Hong_Kong",
-  year:"numeric",month:"long",day:"numeric",weekday:"long"
+  timeZone:"Asia/Hong_Kong",year:"numeric",month:"long",day:"numeric",weekday:"long"
  }).format(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),4)));
 }
 
@@ -278,7 +286,7 @@ function toggleTheme(){
 }
 
 function updateClock(){
- const n=new Date();
+ let n=new Date();
  $("time").textContent=new Intl.DateTimeFormat("en-GB",{
   timeZone:"Asia/Hong_Kong",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false
  }).format(n);
@@ -288,13 +296,12 @@ function updateClock(){
 }
 
 function monthName(d){
- return new Intl.DateTimeFormat("zh-Hant-HK",{
-  year:"numeric",month:"long"
- }).format(new Date(d.getFullYear(),d.getMonth(),15));
+ return new Intl.DateTimeFormat("zh-Hant-HK",{year:"numeric",month:"long"})
+  .format(new Date(d.getFullYear(),d.getMonth(),15));
 }
 
 function addEvent(d,e){
- const k=key(d);
+ let k=key(d);
  if(!eventsByDate.has(k))eventsByDate.set(k,[]);
  eventsByDate.get(k).push(e);
  if(!dotsByDate.has(k))dotsByDate.set(k,new Set());
@@ -302,7 +309,7 @@ function addEvent(d,e){
 }
 
 function parseDate(v){
- const m=(v||"").match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})Z?)?/);
+ let m=(v||"").match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})Z?)?/);
  if(!m)return null;
  return {
   date:new Date(+m[1],+m[2]-1,+m[3]),
@@ -326,40 +333,24 @@ function unescapeICS(s){
 
 function parseICSEvent(block){
  const props={};
-
  for(const line of block.split(/\r?\n/)){
   const i=line.indexOf(":");
   if(i<0)continue;
-
-  const left=line.slice(0,i);
-  const value=line.slice(i+1);
-  const name=left.split(";")[0].toUpperCase();
-
+  const left=line.slice(0,i),value=line.slice(i+1),name=left.split(";")[0].toUpperCase();
   if(!props[name])props[name]=[];
   props[name].push({left,value});
  }
-
  const first=name=>(props[name]||[])[0]||null;
- const startProp=first("DTSTART");
- const endProp=first("DTEND");
- const summaryProp=first("SUMMARY");
- const descriptionProp=first("DESCRIPTION");
- const locationProp=first("LOCATION");
- const ruleProp=first("RRULE");
- const statusProp=first("STATUS");
- const ridProp=first("RECURRENCE-ID");
-
+ const startProp=first("DTSTART"),endProp=first("DTEND"),summaryProp=first("SUMMARY"),
+  descriptionProp=first("DESCRIPTION"),locationProp=first("LOCATION"),ruleProp=first("RRULE"),
+  statusProp=first("STATUS"),ridProp=first("RECURRENCE-ID");
  const start=startProp?parseDate(startProp.value):null;
  const end=endProp?parseDate(endProp.value):null;
-
  const exdates=[];
- (props.EXDATE||[]).forEach(p=>{
-  p.value.split(",").forEach(v=>{
-   const d=parseDate(v);
-   if(d)exdates.push(key(d.date));
-  });
- });
-
+ (props.EXDATE||[]).forEach(p=>p.value.split(",").forEach(v=>{
+  const d=parseDate(v);
+  if(d)exdates.push(key(d.date));
+ }));
  return {
   props,start,end,
   title:unescapeICS(summaryProp?.value)||"(沒有活動名稱)",
@@ -374,16 +365,10 @@ function parseICSEvent(block){
 
 function addCalendarEvent(c,event,d,monthStart,monthEnd){
  if(!event.start)return;
-
- const duration=event.end
-  ?Math.max(0,Math.round((event.end.date-event.start.date)/86400000))
-  :0;
-
+ const duration=event.end?Math.max(0,Math.round((event.end.date-event.start.date)/86400000)):0;
  const span=event.start.allDay?Math.max(1,duration):1;
-
  for(let offset=0;offset<span;offset++){
   const day=new Date(d.getFullYear(),d.getMonth(),d.getDate()+offset);
-
   if(day>=monthStart&&day<monthEnd){
    addEvent(day,{
     title:event.title,
@@ -424,7 +409,6 @@ function expandCalendarEvent(c,event,monthStart,monthEnd,excludedDates){
  const until=parts.UNTIL?parseDate(parts.UNTIL)?.date:null;
  const byday=(parts.BYDAY||"").split(",").map(x=>x.slice(-2)).filter(Boolean);
  const codes=["SU","MO","TU","WE","TH","FR","SA"];
-
  const stop=until&&until<monthEnd
   ?new Date(until.getFullYear(),until.getMonth(),until.getDate()+1)
   :monthEnd;
@@ -436,39 +420,31 @@ function expandCalendarEvent(c,event,monthStart,monthEnd,excludedDates){
   }
  }else if(freq==="WEEKLY"){
   for(let d=new Date(Math.max(event.start.date,monthStart));d<stop;d.setDate(d.getDate()+1)){
-   const week=Math.floor(
-    (new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay())-
-     new Date(event.start.date.getFullYear(),event.start.date.getMonth(),event.start.date.getDate()-event.start.date.getDay()))/604800000
-   );
-
+   const week=Math.floor((
+    new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay())-
+    new Date(event.start.date.getFullYear(),event.start.date.getMonth(),event.start.date.getDate()-event.start.date.getDay())
+   )/604800000);
    if(week>=0&&week%interval===0&&
-      (byday.length?byday:[codes[event.start.date.getDay()]]).includes(codes[d.getDay()])){
-    add(new Date(d));
-   }
+    (byday.length?byday:[codes[event.start.date.getDay()]]).includes(codes[d.getDay()]))add(new Date(d));
   }
  }else if(freq==="MONTHLY"){
   for(let y=monthStart.getFullYear(),m=monthStart.getMonth();
-      y<stop.getFullYear()||(y===stop.getFullYear()&&m<=stop.getMonth());){
+   y<stop.getFullYear()||(y===stop.getFullYear()&&m<=stop.getMonth());){
    const d=new Date(y,m,event.start.date.getDate());
    const diff=(y-event.start.date.getFullYear())*12+(m-event.start.date.getMonth());
-
    if(diff>=0&&diff%interval===0&&d.getMonth()===m)add(d);
-
    m++;
-   if(m>11){m=0;y++;}
+   if(m>11){m=0;y++}
   }
- }else{
-  add(event.start.date);
- }
+ }else add(event.start.date);
 }
 
 function parseCalendarEvents(text,c,monthStart,monthEnd){
  const blocks=text.split("BEGIN:VEVENT").slice(1).map(b=>b.split("END:VEVENT")[0]);
  const parsed=blocks.map(parseICSEvent).filter(e=>e.start);
 
- // EXDATE and detached recurrence records suppress the generated original instance.
+ // EXDATE and detached recurrence instances suppress generated occurrences.
  const excluded=new Set();
-
  parsed.forEach(e=>{
   e.exdates.forEach(k=>excluded.add(k));
   if(e.recurrenceId)excluded.add(key(e.recurrenceId.date));
@@ -476,8 +452,10 @@ function parseCalendarEvents(text,c,monthStart,monthEnd){
 
  parsed.forEach(e=>{
   if(e.recurrenceId){
-   if(e.status!=="CANCELLED"&&e.start.date>=monthStart&&e.start.date<monthEnd){
-    addCalendarEvent(c,e,e.start.date,monthStart,monthEnd);
+   if(e.status!=="CANCELLED"){
+    if(e.start.date>=monthStart&&e.start.date<monthEnd){
+     addCalendarEvent(c,e,e.start.date,monthStart,monthEnd);
+    }
    }
   }else{
    expandCalendarEvent(c,e,monthStart,monthEnd,excluded);
@@ -486,49 +464,111 @@ function parseCalendarEvents(text,c,monthStart,monthEnd){
 }
 
 async function fetchCalendarText(ics){
- const targets=[
-  `https://proxy.cors.dev/${ics}`,
-  `https://api.allorigins.win/raw?url=${encodeURIComponent(ics)}`,
-  `https://corsproxy.io/?url=${encodeURIComponent(ics)}`,
-  `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(ics)}`
- ];
+ const now=Date.now();
+ const memory=feedMemoryCache.get(ics);
 
- let lastError;
+ if(memory&&now-memory.time<FEED_CACHE_TTL)return memory.text;
 
- for(const target of targets){
-  try{
-   const res=await fetch(target);
-   if(!res.ok)throw new Error(`HTTP ${res.status}`);
-   const text=await res.text();
-   if(!text.includes("BEGIN:VCALENDAR"))throw new Error("Invalid calendar feed");
-   return text;
-  }catch(err){
-   lastError=err;
+ try{
+  const stored=localStorage.getItem("churchCalendarICS:"+ics);
+  if(stored){
+   const item=JSON.parse(stored);
+   if(item&&item.text&&now-item.time<FEED_CACHE_TTL){
+    feedMemoryCache.set(ics,item);
+    return item.text;
+   }
   }
- }
+ }catch(_){}
 
- throw lastError||new Error("Calendar feed unavailable");
+ if(feedRequests.has(ics))return feedRequests.get(ics);
+
+ const request=(async()=>{
+  const encoded=encodeURIComponent(ics);
+  const targets=[
+   `https://proxy.cors.dev/${ics}`,
+   `https://api.allorigins.win/raw?url=${encoded}`,
+   `https://corsproxy.io/?url=${encoded}`,
+   `https://api.codetabs.com/v1/proxy?quest=${encoded}`
+  ];
+
+  let lastError;
+
+  // Try two proxy providers concurrently, avoiding slow sequential timeouts.
+  for(let i=0;i<targets.length;i+=2){
+   const batch=targets.slice(i,i+2);
+
+   try{
+    const text=await Promise.any(batch.map(async target=>{
+     const controller=new AbortController();
+     const timeout=setTimeout(()=>controller.abort(),7000);
+
+     try{
+      const res=await fetch(target,{signal:controller.signal,cache:"no-store"});
+      if(!res.ok)throw new Error(`HTTP ${res.status}`);
+
+      const body=await res.text();
+      if(!body.includes("BEGIN:VCALENDAR"))throw new Error("Invalid calendar feed");
+
+      return body;
+     }finally{
+      clearTimeout(timeout);
+     }
+    }));
+
+    const item={text,time:Date.now()};
+    feedMemoryCache.set(ics,item);
+
+    try{
+     localStorage.setItem("churchCalendarICS:"+ics,JSON.stringify(item));
+    }catch(_){}
+
+    return text;
+   }catch(err){
+    lastError=err;
+   }
+  }
+
+  throw lastError||new Error("Calendar feed unavailable");
+ })();
+
+ feedRequests.set(ics,request);
+
+ try{
+  return await request;
+ }finally{
+  feedRequests.delete(ics);
+ }
 }
 
 async function loadEvents(){
+ const thisLoad=++loadSequence;
+ setLoading(true);
+
  eventsByDate=new Map();
  dotsByDate=new Map();
 
  const ms=new Date(shown.getFullYear(),shown.getMonth(),1);
  const me=new Date(shown.getFullYear(),shown.getMonth()+1,1);
 
+ // Load every enabled calendar concurrently.
  await Promise.all(calendars.filter(c=>enabled.has(c.id)).map(async c=>{
   try{
    const ics=c.feedUrl||
     `https://calendar.google.com/calendar/ical/${encodeURIComponent(c.id)}/public/basic.ics`;
 
    const text=(await fetchCalendarText(ics)).replace(/\r?\n[ \t]/g,"");
-   parseCalendarEvents(text,c,ms,me);
+
+   if(thisLoad===loadSequence){
+    parseCalendarEvents(text,c,ms,me);
+   }
   }catch(err){
    console.warn("Cannot load events for "+c.name,err);
   }
  }));
 
+ if(thisLoad!==loadSequence)return;
+
+ // Sort all-day events first, then timed events chronologically.
  const categoryPriority=[
   "學生生日","香港節慶假日","全教會","區",
   "學生聚會","學生周間聚會","學生同工"
@@ -551,20 +591,21 @@ async function loadEvents(){
    }
 
    return (priorityById.get(a.calendarId)??categoryPriority.length)-
-          (priorityById.get(b.calendarId)??categoryPriority.length)||
-          a.title.localeCompare(b.title);
+    (priorityById.get(b.calendarId)??categoryPriority.length)||
+    a.title.localeCompare(b.title);
   });
  }
 
  renderPortrait();
  renderLandscape();
+ setLoading(false);
 }
 
 function renderLegend(){
  $("legend").innerHTML="";
 
  calendars.forEach(c=>{
-  const el=document.createElement("div");
+  let el=document.createElement("div");
   el.className="legend-item";
   el.innerHTML=`<span class="mark" style="background:${c.color}"></span><span>${c.name}</span>`;
   $("legend").append(el);
@@ -573,13 +614,14 @@ function renderLegend(){
  ["checks","landscapeChecks"].forEach(containerId=>{
   const host=$(containerId);
   if(!host)return;
+
   host.innerHTML="";
 
   calendars.forEach(c=>{
-   const label=document.createElement("label");
+   let label=document.createElement("label");
    label.className="check";
 
-   const input=document.createElement("input");
+   let input=document.createElement("input");
    input.type="checkbox";
    input.checked=enabled.has(c.id);
 
@@ -592,11 +634,11 @@ function renderLegend(){
     loadEvents();
    });
 
-   const dot=document.createElement("span");
+   let dot=document.createElement("span");
    dot.className="mark";
    dot.style.background=c.color;
 
-   const name=document.createElement("span");
+   let name=document.createElement("span");
    name.textContent=c.name;
 
    label.append(input,dot,name);
@@ -609,8 +651,7 @@ function makeDot(d){
  const wrap=document.createElement("span");
  wrap.className="marks";
 
- const dayEvents=(eventsByDate.get(key(d))||[])
-  .filter(e=>enabled.has(e.calendarId));
+ const dayEvents=(eventsByDate.get(key(d))||[]).filter(e=>enabled.has(e.calendarId));
 
  const seenBars=new Set();
 
@@ -626,9 +667,7 @@ function makeDot(d){
   wrap.append(bar);
  });
 
- const timedCalendars=new Set(
-  dayEvents.filter(e=>!e.allDay).map(e=>e.calendarId)
- );
+ const timedCalendars=new Set(dayEvents.filter(e=>!e.allDay).map(e=>e.calendarId));
 
  if(timedCalendars.size){
   const row=document.createElement("span");
@@ -636,6 +675,7 @@ function makeDot(d){
 
   timedCalendars.forEach(id=>{
    const c=calendars.find(x=>x.id===id);
+
    if(c){
     const dot=document.createElement("span");
     dot.className="mark";
@@ -654,30 +694,33 @@ function makeDot(d){
 function renderPortrait(){
  $("monthTitle").textContent=monthName(shown);
 
- const first=new Date(shown.getFullYear(),shown.getMonth(),1).getDay();
- const count=new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate();
- const host=$("days");
+ let first=new Date(shown.getFullYear(),shown.getMonth(),1).getDay();
+ let count=new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate();
+ let host=$("days");
+
  host.innerHTML="";
 
  for(let i=0;i<first;i++){
-  const b=document.createElement("div");
+  let b=document.createElement("div");
   b.className="day blank";
   host.append(b);
  }
 
  for(let d=1;d<=count;d++){
-  const date=new Date(shown.getFullYear(),shown.getMonth(),d);
-  const b=document.createElement("button");
+  let date=new Date(shown.getFullYear(),shown.getMonth(),d);
+  let b=document.createElement("button");
+
   b.className="day";
 
   if(date.toDateString()===selected.toDateString())b.classList.add("selected");
   if(date.toDateString()===today.toDateString())b.classList.add("today");
 
-  const n=document.createElement("span");
+  let n=document.createElement("span");
   n.className="daynum";
   n.textContent=d;
 
   b.append(n,makeDot(date));
+
   b.addEventListener("click",()=>{
    selected=date;
    renderPortrait();
@@ -693,6 +736,7 @@ function renderPortrait(){
 function showEventDetails(e,date){
  const modal=$("eventModal");
  const body=$("eventModalBody");
+
  $("eventModalTitle").textContent=e.title;
  body.innerHTML="";
 
@@ -756,8 +800,7 @@ function renderSelected(){
  const listHost=$("dayEventList");
  listHost.innerHTML="";
 
- const dayEvents=(eventsByDate.get(key(selected))||[])
-  .filter(e=>enabled.has(e.calendarId));
+ const dayEvents=(eventsByDate.get(key(selected))||[]).filter(e=>enabled.has(e.calendarId));
 
  if(!dayEvents.length){
   const empty=document.createElement("div");
@@ -800,6 +843,7 @@ function renderSelected(){
  url.searchParams.set("showPrint","0");
  url.searchParams.set("showCalendars","0");
  url.searchParams.set("showTz","0");
+
  url.searchParams.set(
   "dates",
   `${key(selected)}/${key(new Date(selected.getFullYear(),selected.getMonth(),selected.getDate()+1))}`
@@ -843,39 +887,38 @@ function renderLandscape(){
  host.style.setProperty("--weeks",weeks);
 
  dayNames.forEach(n=>{
-  const h=document.createElement("div");
+  let h=document.createElement("div");
   h.className="lwday";
   h.textContent=n;
   host.append(h);
  });
 
+ // Only dates in the displayed month are shown.
  for(let i=0;i<first;i++){
-  const blank=document.createElement("div");
+  let blank=document.createElement("div");
   blank.className="lday";
   blank.style.background="#fbf8f3";
   host.append(blank);
  }
 
  for(let d=1;d<=count;d++){
-  const date=new Date(shown.getFullYear(),shown.getMonth(),d);
-  const cell=document.createElement("div");
+  let date=new Date(shown.getFullYear(),shown.getMonth(),d);
+  let cell=document.createElement("div");
   cell.className="lday";
 
   if(date.toDateString()===today.toDateString())cell.classList.add("today");
 
-  const num=document.createElement("div");
+  let num=document.createElement("div");
   num.className="ldaynum";
   num.textContent=d;
   cell.append(num);
 
-  const ev=(eventsByDate.get(key(date))||[])
-   .filter(e=>enabled.has(e.calendarId));
-
+  const ev=(eventsByDate.get(key(date))||[]).filter(e=>enabled.has(e.calendarId));
   const list=document.createElement("div");
   list.className="event-list";
 
   ev.forEach(e=>{
-   const pill=document.createElement("button");
+   let pill=document.createElement("button");
    pill.type="button";
    pill.className="levent "+(e.allDay?"allday-event":"timed-event");
    pill.style.setProperty("--event-color",e.color+"88");
@@ -888,23 +931,23 @@ function renderLandscape(){
    if(e.allDay){
     pill.style.background=e.color+"88";
 
-    const time=document.createElement("span");
+    let time=document.createElement("span");
     time.className="etime";
     time.textContent="全日 ";
     pill.append(time);
    }else{
-    const dot=document.createElement("span");
+    let dot=document.createElement("span");
     dot.className="event-dot";
     dot.style.background=e.color;
     pill.append(dot);
 
-    const time=document.createElement("span");
+    let time=document.createElement("span");
     time.className="etime";
     time.textContent=e.time+" ";
     pill.append(time);
    }
 
-   const title=document.createElement("span");
+   let title=document.createElement("span");
    title.textContent=e.title;
    pill.append(title);
 
@@ -916,8 +959,9 @@ function renderLandscape(){
   host.append(cell);
  }
 
+ // Pad the last row with blanks.
  while(host.children.length<(weeks+1)*7){
-  const blank=document.createElement("div");
+  let blank=document.createElement("div");
   blank.className="lday";
   blank.style.background="#fbf8f3";
   host.append(blank);
@@ -930,10 +974,7 @@ function shiftMonth(delta){
  selected=new Date(
   shown.getFullYear(),
   shown.getMonth(),
-  Math.min(
-   selected.getDate(),
-   new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate()
-  )
+  Math.min(selected.getDate(),new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate())
  );
 
  renderPortrait();
@@ -954,6 +995,7 @@ function goToday(){
 $("prev").addEventListener("click",()=>shiftMonth(-1));
 $("next").addEventListener("click",()=>shiftMonth(1));
 $("today").addEventListener("click",goToday);
+
 $("lprev").addEventListener("click",()=>shiftMonth(-1));
 $("lnext").addEventListener("click",()=>shiftMonth(1));
 $("ltoday").addEventListener("click",goToday);
@@ -964,6 +1006,7 @@ $("themeToggle").addEventListener("click",()=>{
 });
 
 $("eventClose").addEventListener("click",closeEventDetails);
+
 $("eventModal").addEventListener("click",e=>{
  if(e.target===$("eventModal"))closeEventDetails();
 });
