@@ -259,7 +259,7 @@ const calendars=[
 ];
 
 // 請只修改下一行：填入新建立的 Google Calendar API 金鑰。不要把金鑰分享給他人。
-const GOOGLE_CALENDAR_API_KEY = "AIzaSyANoABJaE91-eHNEBdvoaK9-S5y8n1_OBU";
+const GOOGLE_CALENDAR_API_KEY = "AIzaSyBuJZ5lNEay5NK48DbC5ERvv6FW5sZBGG8";
 
 const enabled=new Set(calendars.map(c=>c.id));
 const $=id=>document.getElementById(id);
@@ -589,7 +589,7 @@ function addGoogleApiEvent(c,item,monthStart,monthEnd){
 async function fetchGoogleCalendarEvents(c,monthStart,monthEnd,forceRefresh=false){
 if (
   !GOOGLE_CALENDAR_API_KEY ||
-  GOOGLE_CALENDAR_API_KEY === "AIzaSyANoABJaE91-eHNEBdvoaK9-S5y8n1_OBU"
+  GOOGLE_CALENDAR_API_KEY === "AIzaSyBuJZ5lNEay5NK48DbC5ERvv6FW5sZBGG8"
 ) {
   throw new Error("請先在程式碼中填入 Google Calendar API 金鑰");
 }
