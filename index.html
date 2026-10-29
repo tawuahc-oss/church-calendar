@@ -27,7 +27,6 @@ body[data-theme="night"] .day.selected{background:#40352c}
 body[data-theme="night"] .check{background:#2c2d35;border-color:#454650;color:var(--ink)}
 body[data-theme="night"] .legend-item{color:#d4c9bc}
 body[data-theme="night"] .levent{color:var(--ink)}
-body[data-theme="night"] .levent.allday-event{color:#171717}
 body[data-theme="night"] .cal-shell,body[data-theme="night"] .day-events{box-shadow:none}
 body[data-theme="night"] .events-head,body[data-theme="night"] .calendar-checks{border-color:var(--line)}
 body[data-theme="night"] .nav button{background:var(--paper);color:var(--ink);border-color:var(--line)}
@@ -35,8 +34,6 @@ body[data-theme="night"] .nav .todaybtn{background:var(--accent)!important;color
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
 .brand{font-size:.7rem;letter-spacing:.1em;color:var(--accent);font-weight:800}
 h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
-.clock{text-align:right;color:var(--muted);font-size:.75rem;white-space:nowrap}
-#time{font-size:1rem;color:var(--ink);font-weight:750;font-variant-numeric:tabular-nums}
 .monthbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 12px}
 .month-title{font-size:clamp(1.3rem,3vw,2.3rem);font-weight:800;letter-spacing:-.03em}
 .nav{display:flex;gap:5px}
@@ -84,7 +81,6 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
 .levent.timed-event{display:flex;align-items:flex-start;gap:4px;padding:2px 1px;margin:1px 0}
 .event-dot{display:inline-block;width:.9em;height:.9em;min-width:.9em;border-radius:50%;margin-top:.12em;flex-shrink:0}
 .levent .etime{font-weight:750;white-space:nowrap}
-.landscape-empty{font-size:.8rem;color:var(--muted);padding:10px}
 .landscape-checks{padding:4px 0;gap:4px;border:0;overflow-x:auto;flex-wrap:nowrap;white-space:nowrap}
 .landscape-checks .check{flex-shrink:0;font-size:.78rem;padding:4px 7px}
 .event-list{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;flex:1}
@@ -106,13 +102,11 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
 }
 @media (orientation:landscape){
  .app{height:100dvh;max-width:none;padding:5px 8px;overflow:hidden}
- .top{height:27px;margin:0 0 3px}
- .brand{display:none}
+ .top{height:34px;margin:0 0 3px}
+ .brand{display:block;font-size:.55rem;letter-spacing:.06em;line-height:1.1;margin-bottom:2px}
  h1{font-size:1rem;margin:0}
- .clock{font-size:.65rem}
- #time{font-size:.8rem}
  .monthbar,.cal-shell,.day-events,.notice{display:none!important}
- .landscape-calendar{display:block;height:calc(100dvh - 38px);width:100%}
+ .landscape-calendar{display:block;height:calc(100dvh - 45px);width:100%}
  .landscape-head{height:29px;margin:0}
  .landscape-title{font-size:clamp(1rem,2.3vh,1.35rem)}
  .landscape-head .nav button{min-height:27px;min-width:32px;padding:2px 8px;border-radius:6px;font-size:.9rem}
@@ -145,8 +139,13 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
 <body>
 <div class="app">
 <header class="top">
- <div><div class="brand">THE CHURCH OF GOD IN HONG KONG</div><h1>北區學生月程</h1></div>
- <div class="top-actions"><button class="theme-toggle" id="themeToggle" type="button" aria-label="切換日間及夜間模式">🌙 夜間</button><div class="clock"><div id="time">--:--:--</div><div id="dateLabel">香港時間</div></div></div>
+ <div>
+  <div class="brand">THE CHURCH OF GOD IN HONG KONG</div>
+  <h1>北區學生月程</h1>
+ </div>
+ <div class="top-actions">
+  <button class="theme-toggle" id="themeToggle" type="button" aria-label="切換日間及夜間模式">🌙 夜間</button>
+ </div>
 </header>
 <div class="monthbar">
  <div class="month-title" id="monthTitle">載入中…</div>
@@ -191,7 +190,6 @@ const dayNames=["日","一","二","三","四","五","六"];
 function dateLabel(d){return new Intl.DateTimeFormat("zh-Hant-HK",{timeZone:"Asia/Hong_Kong",year:"numeric",month:"long",day:"numeric",weekday:"long"}).format(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),4)))}
 function setTheme(theme){document.body.dataset.theme=theme;const night=theme==="night";["themeToggle","landscapeThemeToggle"].forEach(id=>{const b=$(id);if(b){b.textContent=night?"☀️ 日間":"🌙 夜間";b.setAttribute("aria-pressed",String(night))}})}
 function toggleTheme(){setTheme(document.body.dataset.theme==="night"?"day":"night")}
-function updateClock(){let n=new Date();$("time").textContent=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Hong_Kong",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(n);$("dateLabel").textContent=new Intl.DateTimeFormat("zh-Hant-HK",{timeZone:"Asia/Hong_Kong",year:"numeric",month:"short",day:"numeric",weekday:"short"}).format(n)}
 function monthName(d){return new Intl.DateTimeFormat("zh-Hant-HK",{year:"numeric",month:"long"}).format(new Date(d.getFullYear(),d.getMonth(),15))}
 function addEvent(d,e){let k=key(d);if(!eventsByDate.has(k))eventsByDate.set(k,[]);eventsByDate.get(k).push(e);if(!dotsByDate.has(k))dotsByDate.set(k,new Set());dotsByDate.get(k).add(e.calendarId)}
 function parseDate(v){let m=(v||"").match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})Z?)?/);if(!m)return null;return {date:new Date(+m[1],+m[2]-1,+m[3]),allDay:!m[4],hour:+(m[4]||0),minute:+(m[5]||0),utc:!!(m[4]&&v.endsWith("Z"))}}
@@ -202,14 +200,15 @@ function parseEventBlock(block,c,monthStart,monthEnd){
  for(const line of lines){const i=line.indexOf(":");if(i<0)continue;const k=line.slice(0,i).split(";")[0];if(["DTSTART","DTEND","SUMMARY","RRULE","EXDATE"].includes(k))props[k]=line.slice(i+1)}
  const start=parseDate(props.DTSTART);if(!start)return;
  const title=unescapeICS(props.SUMMARY)||"(沒有活動名稱)";
- const duration=props.DTEND?Math.max(0,Math.round((parseDate(props.DTEND)?.date-start.date)/86400000)):0;
+ const end=props.DTEND?parseDate(props.DTEND):null;
+ const duration=end?Math.max(0,Math.round((end.date-start.date)/86400000)):0;
  const rule=props.RRULE||"";
  const add=d=>{const span=start.allDay?Math.max(1,duration):1;for(let offset=0;offset<span;offset++){const day=new Date(d.getFullYear(),d.getMonth(),d.getDate()+offset);if(day>=monthStart&&day<monthEnd)addEvent(day,{title,time:formatTime(start),calendarId:c.id,color:c.color,allDay:start.allDay})}};
  if(!rule){add(start.date);return}
  const parts={};rule.split(";").forEach(x=>{let i=x.indexOf("=");if(i>0)parts[x.slice(0,i)]=x.slice(i+1)});
  const freq=parts.FREQ,interval=Math.max(1,+(parts.INTERVAL||1)),until=parts.UNTIL?parseDate(parts.UNTIL)?.date:null,byday=(parts.BYDAY||"").split(",").map(x=>x.slice(-2)).filter(Boolean),codes=["SU","MO","TU","WE","TH","FR","SA"];
  let stop=until&&until<monthEnd?new Date(until.getFullYear(),until.getMonth(),until.getDate()+1):monthEnd;
- if(freq==="DAILY"){for(let d=new Date(Math.max(start.date,monthStart));d<stop;d.setDate(d.getDate()+1)){let n=Math.round((d-start.date)/86400000);if(n>=0&&n%interval===0)add(new Date(d))}}
+ if(freq==="DAILY"){for(let d=new Date(start.date);d<stop;d.setDate(d.getDate()+1)){let n=Math.round((d-start.date)/86400000);if(n>=0&&n%interval===0)add(new Date(d))}}
  else if(freq==="WEEKLY"){for(let d=new Date(Math.max(start.date,monthStart));d<stop;d.setDate(d.getDate()+1)){let week=Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay())-new Date(start.date.getFullYear(),start.date.getMonth(),start.date.getDate()-start.date.getDay()))/604800000);if(week>=0&&week%interval===0&&(byday.length?byday:[codes[start.date.getDay()]]).includes(codes[d.getDay()]))add(new Date(d))}}
  else if(freq==="MONTHLY"){for(let y=monthStart.getFullYear(),m=monthStart.getMonth();y<stop.getFullYear()||(y===stop.getFullYear()&&m<=stop.getMonth());){let d=new Date(y,m,start.date.getDate()),diff=(y-start.date.getFullYear())*12+(m-start.date.getMonth());if(diff>=0&&diff%interval===0&&d.getMonth()===m)add(d);m++;if(m>11){m=0;y++}}}
  else add(start.date);
@@ -278,13 +277,8 @@ function renderLandscape(){
   ev.forEach(e=>{
    let item=document.createElement("div");item.className="levent "+(e.allDay?"allday-event":"timed-event");
    item.style.setProperty("--event-color",e.color+"88");
-   if(e.allDay){
-    item.style.background=e.color+"88";
-    let time=document.createElement("span");time.className="etime";time.textContent="全日 ";item.append(time);
-   }else{
-    let dot=document.createElement("span");dot.className="event-dot";dot.style.background=e.color;item.append(dot);
-    let time=document.createElement("span");time.className="etime";time.textContent=e.time+" ";item.append(time);
-   }
+   if(e.allDay){item.style.background=e.color+"88";let time=document.createElement("span");time.className="etime";time.textContent="全日 ";item.append(time)}
+   else{let dot=document.createElement("span");dot.className="event-dot";dot.style.background=e.color;item.append(dot);let time=document.createElement("span");time.className="etime";time.textContent=e.time+" ";item.append(time)}
    let title=document.createElement("span");title.textContent=e.title;item.append(title);list.append(item);
   });
   cell.append(list);host.append(cell);
@@ -296,7 +290,7 @@ function goToday(){today=nowHK();shown=new Date(today.getFullYear(),today.getMon
 $("prev").addEventListener("click",()=>shiftMonth(-1));$("next").addEventListener("click",()=>shiftMonth(1));$("today").addEventListener("click",goToday);
 $("lprev").addEventListener("click",()=>shiftMonth(-1));$("lnext").addEventListener("click",()=>shiftMonth(1));$("ltoday").addEventListener("click",goToday);
 $("themeToggle").addEventListener("click",toggleTheme);$("landscapeThemeToggle").addEventListener("click",toggleTheme);setTheme("day");
-renderLegend();renderPortrait();renderLandscape();updateClock();setInterval(updateClock,1000);loadEvents();
+renderLegend();renderPortrait();renderLandscape();loadEvents();
 </script>
 </body>
 </html>
