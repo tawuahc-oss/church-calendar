@@ -1,3 +1,363 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f1e8">
+<link rel="icon" type="image/png" href="/church-calendar/calendar-thumbnail.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/church-calendar/calendar-thumbnail.png">
+<meta name="apple-mobile-web-app-title" content="北區學生月程">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>北區學生月程</title>
+<style>
+:root{--bg:#f7f1e8;--paper:#fffdf9;--ink:#3e342b;--muted:#887b6d;--line:#e5dacb;--accent:#87684a}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;width:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%}
+body{overflow-x:hidden}
+button,input{font:inherit}
+button{touch-action:manipulation}
+.app{max-width:1500px;margin:auto;padding:clamp(8px,2vw,24px);min-width:0}
+.theme-toggle{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:9px;padding:6px 10px;font-size:.8rem;font-weight:750;white-space:nowrap;cursor:pointer}
+.refresh-button{font-size:1.15rem;line-height:1;padding:5px 9px;min-width:34px;min-height:31px}
+.refresh-button:disabled{opacity:.55;cursor:wait}
+.refresh-button.spinning{animation:spin .75s linear infinite}
+.top-actions{display:flex;align-items:center;gap:10px}
+.loading-status{display:none;align-items:center;gap:6px;color:var(--muted);font-size:.76rem;white-space:nowrap}
+.loading-status.active{display:inline-flex}
+.loading-spinner{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.loading-spinner{animation-duration:2s}}
+body[data-theme="night"]{--bg:#17191f;--paper:#22252d;--ink:#eee8df;--muted:#b3a89a;--line:#41434b;--accent:#c49a70;background:var(--bg);color:var(--ink)}
+body[data-theme="night"] .weekdays,body[data-theme="night"] .lwday{background:#30313a;color:#d6c7b6}
+body[data-theme="night"] .day.blank,body[data-theme="night"] .lday[style*="background"]{background:#1d2027!important}
+body[data-theme="night"] .day.selected{background:#40352c}
+body[data-theme="night"] .check{background:#2c2d35;border-color:#454650;color:var(--ink)}
+body[data-theme="night"] .legend-item{color:#d4c9bc}
+body[data-theme="night"] .levent{color:#171717}
+body[data-theme="night"] .cal-shell,body[data-theme="night"] .day-events{box-shadow:none}
+body[data-theme="night"] .events-head,body[data-theme="night"] .calendar-checks{border-color:var(--line)}
+body[data-theme="night"] .nav button{background:var(--paper);color:var(--ink);border-color:var(--line)}
+body[data-theme="night"] .nav .todaybtn{background:var(--accent)!important;color:#171717!important}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.brand{font-size:.7rem;letter-spacing:.1em;color:var(--accent);font-weight:800}
+h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
+.clock{text-align:right;color:var(--muted);font-size:.75rem;white-space:nowrap}
+#time{font-size:1rem;color:var(--ink);font-weight:750;font-variant-numeric:tabular-nums}
+.monthbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 12px}
+.month-title{font-size:clamp(1.3rem,3vw,2.3rem);font-weight:800;letter-spacing:-.03em}
+.nav{display:flex;gap:5px}
+.nav button{min-width:38px;min-height:38px;border:1px solid var(--line);background:var(--paper);color:var(--accent);border-radius:10px;padding:6px 10px;font-weight:700}
+.todaybtn{background:var(--accent)!important;color:white!important}
+.landscape-calendar{display:none}
+.cal-shell,.day-events{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 8px 26px #5d47210d}
+.weekdays,.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.weekdays{background:#f0e6d9;border-bottom:1px solid var(--line)}
+.weekdays div{text-align:center;padding:8px 0;font-size:.8rem;color:var(--muted);font-weight:800}
+.day{min-width:0;min-height:clamp(48px,9vw,100px);padding:4px 1px;border:0;border-right:1px solid #f0e7dc;border-bottom:1px solid #f0e7dc;background:transparent;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:3px;overflow:hidden}
+.day:nth-child(7n){border-right:0}
+.day.blank{background:#fbf8f3;pointer-events:none}
+.day.selected{background:#f3e4d3;box-shadow:inset 0 0 0 2px #a98764}
+.day.today .daynum{background:var(--accent);color:white}
+.daynum{width:25px;height:25px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:.9rem;font-weight:650;flex-shrink:0}
+.marks{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;width:100%;min-height:7px;overflow:hidden}
+.dot-row{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;min-height:5px;width:100%}
+.mark{display:inline-block;width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.all-day-mark{display:block;width:min(80%,22px);height:3px;border-radius:2px;flex-shrink:0}
+.legend{display:flex;flex-wrap:wrap;gap:7px 12px;padding:10px 12px;border-top:1px solid var(--line)}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.78rem;color:#655648}
+.legend .mark{width:9px;height:9px}
+.day-events{margin-top:12px}
+.events-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border-bottom:1px solid var(--line)}
+.events-head h2{font-size:1rem;margin:0}
+.events-date{color:var(--muted);font-size:.8rem;margin-top:4px}
+.google-link{color:var(--accent);font-size:.8rem;font-weight:700;text-decoration:none;white-space:nowrap}
+.calendar-checks{display:flex;flex-wrap:wrap;gap:7px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.check{display:inline-flex;align-items:center;gap:5px;background:#f8f2e9;border:1px solid #e9dece;border-radius:999px;padding:6px 8px;font-size:.76rem;cursor:pointer}
+.check input{accent-color:var(--accent);margin:0}
+.feed{padding:0 12px 12px}
+.feed iframe{display:block;width:100%;height:350px;border:0;background:var(--paper)}
+.day-event-list{display:grid;gap:7px;padding:10px 0 12px}
+.day-event-item{display:flex;align-items:flex-start;gap:9px;width:100%;text-align:left;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);cursor:pointer}
+.day-event-item:hover{border-color:var(--accent)}
+.day-event-dot{width:11px;height:11px;min-width:11px;border-radius:50%;margin-top:4px}
+.day-event-copy{min-width:0;flex:1}
+.day-event-name{font-weight:750;overflow-wrap:anywhere}
+.day-event-meta{font-size:.8rem;color:var(--muted);margin-top:3px}
+.empty-day{padding:16px 4px;color:var(--muted);font-size:.9rem}
+.event-modal{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:18px;background:#0008}
+.event-modal.open{display:flex}
+.event-dialog{width:min(520px,100%);max-height:85dvh;overflow:auto;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 20px 70px #0004}
+.event-dialog-head{display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+.event-dialog h2{font-size:1.2rem;margin:0;overflow-wrap:anywhere}
+.event-close{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:4px 10px;cursor:pointer;flex-shrink:0}
+.event-detail-row{display:flex;gap:9px;margin-top:14px;line-height:1.5}
+.event-detail-label{width:64px;min-width:64px;color:var(--muted);font-size:.85rem}
+.event-detail-value{overflow-wrap:anywhere;white-space:pre-wrap}
+.event-detail-color{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
+body[data-theme="night"] .day-event-item{background:var(--paper);color:var(--ink)}
+body[data-theme="night"] .event-dialog{background:var(--paper);color:var(--ink)}
+body[data-theme="night"] .feed iframe{background:#17191f}
+.notice{font-size:.76rem;line-height:1.5;color:var(--muted);padding:12px 3px}
+.landscape-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.landscape-nav{margin-left:auto;justify-content:flex-end}
+.landscape-title{font-size:clamp(1rem,2vw,1.5rem);font-weight:800}
+.landscape-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:auto repeat(var(--weeks,5),minmax(0,1fr));height:calc(100% - 70px);border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--paper)}
+.lwday{text-align:center;padding:3px 0;background:#f0e6d9;color:var(--muted);font-weight:800;font-size:clamp(.6rem,.85vw,.85rem);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.lday{min-width:0;min-height:0;padding:3px;border-right:1px solid #eee4d8;border-bottom:1px solid #eee4d8;overflow:hidden;display:flex;flex-direction:column}
+.lday:nth-child(7n){border-right:0}
+.ldaynum{font-size:clamp(.68rem,.9vw,.9rem);font-weight:750;margin-bottom:2px}
+.lday.today .ldaynum{display:inline-flex;background:var(--accent);color:white;border-radius:50%;width:20px;height:20px;align-items:center;justify-content:center}
+.levent{font-size:clamp(.68rem,.82vw,.88rem);line-height:1.22;border-radius:3px;padding:3px 4px;margin:1px 0;overflow-wrap:anywhere;word-break:break-word;color:var(--ink);background:transparent;flex-shrink:0}
+.levent.allday-event{color:#2f2b26;background:var(--event-color);border-left:0!important;border-radius:3px;padding:3px 4px}
+.levent.timed-event{display:flex;align-items:flex-start;gap:4px;padding:2px 1px;margin:1px 0}
+.event-dot{display:inline-block;width:.9em;height:.9em;min-width:.9em;border-radius:50%;margin-top:.12em;flex-shrink:0}
+.levent .etime{font-weight:750;white-space:nowrap}
+.landscape-empty{font-size:.8rem;color:var(--muted);padding:10px}
+.landscape-checks{padding:4px 0;gap:4px;border:0;overflow-x:auto;flex-wrap:nowrap;white-space:nowrap}
+.landscape-checks .check{flex-shrink:0;font-size:.78rem;padding:4px 7px}
+.event-list{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;flex:1}
+
+/* 直向模式不顯示底部 Google 日曆嵌入視窗 */
+@media (orientation:portrait){
+ .feed{display:none!important}
+}
+
+@media(max-width:600px) and (orientation:portrait){
+ .app{padding:9px 7px}
+ .brand{font-size:.6rem}
+ h1{font-size:1.25rem}
+ .top{margin-bottom:8px}
+ .monthbar{margin:6px 0 9px}
+ .nav button{min-width:33px;min-height:34px;padding:5px 8px}
+ .weekdays div{font-size:.7rem;padding:6px 0}
+ .day{min-height:clamp(44px,12vw,62px);gap:2px}
+ .daynum{width:23px;height:23px;font-size:.82rem}
+ .legend{gap:6px 9px;padding:8px}
+ .legend-item{font-size:.7rem}
+ .calendar-checks{padding:8px;gap:5px}
+ .check{font-size:.69rem;padding:5px 6px}
+ .feed iframe{height:330px}
+}
+
+@media (orientation:landscape){
+ .app{height:100dvh;max-width:none;padding:5px 8px;overflow:hidden}
+ .top{height:34px;margin:0 0 3px}
+ .brand{display:block;font-size:.55rem;letter-spacing:.06em;line-height:1.1;margin-bottom:2px}
+ h1{font-size:1rem;margin:0}
+ .clock{font-size:.65rem}
+ #time{font-size:.8rem}
+ .monthbar,.cal-shell,.day-events,.notice{display:none!important}
+ .landscape-calendar{display:block;height:calc(100dvh - 45px);width:100%}
+ .landscape-head{height:29px;margin:0}
+ .landscape-title{font-size:clamp(1rem,2.3vh,1.35rem)}
+ .landscape-head .nav button{min-height:27px;min-width:32px;padding:2px 8px;border-radius:6px;font-size:.9rem}
+ .landscape-checks{height:34px;margin:0;overflow-x:auto;overflow-y:hidden}
+ .landscape-checks .check{font-size:clamp(.68rem,1.5vh,.85rem);padding:4px 7px}
+ .landscape-grid{height:calc(100% - 63px)}
+ .lwday{font-size:clamp(.7rem,1.5vh,.9rem);padding:3px 0}
+ .lday{padding:3px}
+ .ldaynum{font-size:clamp(.78rem,1.8vh,1rem);margin-bottom:2px;flex-shrink:0}
+ .lday.today .ldaynum{width:22px;height:22px}
+ .levent{font-size:clamp(.68rem,1.55vh,.9rem);line-height:1.2;padding:3px 4px;margin:1px 0}
+ .levent.timed-event{padding:1px 0;gap:3px}
+ .event-dot{width:5px;height:5px;min-width:5px}
+}
+@media (orientation:landscape) and (max-height:430px){
+ .landscape-checks{height:28px}
+ .landscape-grid{height:calc(100% - 57px)}
+ .landscape-checks .check{font-size:.65rem;padding:3px 5px}
+ .levent{font-size:clamp(.62rem,1.45vh,.78rem);padding:2px 3px}
+ .levent.timed-event{padding:1px 0}
+}
+@media(min-width:1000px) and (pointer:fine) and (orientation:portrait){
+ .app{max-width:1600px;padding:20px 24px}
+ .month-title{font-size:2.5rem}
+ .weekdays div{font-size:1rem}
+ .daynum{font-size:1.1rem}
+ .legend-item{font-size:.9rem}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+ <div><div class="brand">THE CHURCH OF GOD IN HONG KONG</div><h1>北區學生月程</h1></div>
+ <div class="top-actions">
+  <span class="loading-status" id="loadingStatus" role="status" aria-live="polite">
+   <span class="loading-spinner" aria-hidden="true"></span>
+   <span id="loadingText">載入活動…</span>
+  </span>
+  <button class="theme-toggle" id="themeToggle" type="button" aria-label="切換日間及夜間模式">🌙 夜間</button>
+  <button class="theme-toggle refresh-button" id="refreshButton" type="button" aria-label="重新載入活動" title="重新載入活動">↻</button>
+ </div>
+</header>
+
+<div class="monthbar">
+ <div class="month-title" id="monthTitle">載入中…</div>
+ <div class="nav">
+  <button id="prev" aria-label="上一個月">‹</button>
+  <button class="todaybtn" id="today">今天</button>
+  <button id="next" aria-label="下一個月">›</button>
+ </div>
+</div>
+
+<section class="landscape-calendar" id="landscapeCalendar">
+ <div class="landscape-head">
+  <div class="landscape-title" id="landscapeTitle"></div>
+  <div class="nav landscape-nav">
+   <button id="lprev" aria-label="上一個月">‹</button>
+   <button id="ltoday" class="todaybtn">今天</button>
+   <button id="lnext" aria-label="下一個月">›</button>
+  </div>
+ </div>
+ <div class="calendar-checks landscape-checks" id="landscapeChecks" aria-label="選擇要顯示的活動類別"></div>
+ <div class="landscape-grid" id="landscapeGrid"></div>
+</section>
+
+<section class="cal-shell">
+ <div class="weekdays">
+  <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+ </div>
+ <div class="days" id="days"></div>
+ <div class="legend" id="legend"></div>
+</section>
+
+<section class="day-events">
+ <div class="events-head">
+  <div>
+   <h2 id="eventTitle">當日活動</h2>
+   <div class="events-date" id="eventDate"></div>
+  </div>
+  <a class="google-link" id="openDay" href="https://calendar.google.com/" target="_blank" rel="noopener noreferrer">在 Google Calendar 開啟 ↗</a>
+ </div>
+ <div class="calendar-checks" id="checks"></div>
+ <div class="day-event-list" id="dayEventList"></div>
+ <div class="feed" id="feed"></div>
+</section>
+
+<div class="event-modal" id="eventModal" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
+ <div class="event-dialog">
+  <div class="event-dialog-head">
+   <h2 id="eventModalTitle">活動詳情</h2>
+   <button class="event-close" id="eventClose" type="button">關閉</button>
+  </div>
+  <div id="eventModalBody"></div>
+ </div>
+</div>
+
+<div class="notice">直向模式以圓點標示有活動的日期；橫向模式在桌面及手機橫向時使用同一款月曆；可用上方類別選項篩選活動。活動資料透過 Google Calendar API 讀取；香港節慶假日使用公開日曆資料來源。</div>
+</div>
+
+<script>
+const calendars=[
+ {name:"全教會",id:"5feb8669918e0c65e45c6debb6dc344a824f7d4bbe53887150df9bf8ed5596e2@group.calendar.google.com",color:"#7CB342"},
+ {name:"區",id:"9d0718947251b0ecb937d26521e006c9e458155a8b0542442996ae64112a513e@group.calendar.google.com",color:"#B39DDB"},
+ {name:"學生同工",id:"144b428f9fda4934be111d528e42fd6e831abf7880aca0b94576a6f449b5fb60@group.calendar.google.com",color:"#EF746C"},
+ {name:"學生周間聚會",id:"6d5e78d1ae879ea7dd573f6193354eae02b085523b874cb0fb30b3736cd6e322@group.calendar.google.com",color:"#FFBF16"},
+ {name:"學生生日",id:"640bce4eda2a30e86dfe565dee12ac630bdc9454004d219e3ab359682f722bfe@group.calendar.google.com",color:"#FF9800"},
+ {name:"學生聚會",id:"0e5684c7eea55390ead078357f529444010f25599c092a48717bdb6bcbbb217d@group.calendar.google.com",color:"#03A9F4"},
+ {name:"香港節慶假日",id:"hk-public-holidays",feedUrl:"http://www.1823.gov.hk/common/ical/gc/tc.ics",color:"#D95D39"}
+];
+
+// 請將佔位文字換成你新建立、已限制網站來源及 API 權限的金鑰。
+const GOOGLE_CALENDAR_API_KEY="AIzaSyANoABJaE91-eHNEBdvoaK9-S5y8n1_OBU";
+
+const enabled=new Set(calendars.map(c=>c.id));
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+const key=d=>`${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+const nowHK=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Hong_Kong"}));
+
+let today=nowHK();
+let shown=new Date(today.getFullYear(),today.getMonth(),1);
+let selected=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+let eventsByDate=new Map(),dotsByDate=new Map();
+let loadSequence=0;
+
+const FEED_CACHE_TTL=5*60*1000;
+const feedMemoryCache=new Map();
+const feedRequests=new Map();
+
+function setLoading(active){
+ const el=$("loadingStatus");
+ if(!el)return;
+ el.classList.toggle("active",active);
+ el.setAttribute("aria-hidden",String(!active));
+}
+
+const dayNames=["日","一","二","三","四","五","六"];
+
+function dateLabel(d){
+ return new Intl.DateTimeFormat("zh-Hant-HK",{
+  timeZone:"Asia/Hong_Kong",
+  year:"numeric",month:"long",day:"numeric",weekday:"long"
+ }).format(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),4)));
+}
+
+function setTheme(theme){
+ document.body.dataset.theme=theme;
+ const night=theme==="night";
+ const b=$("themeToggle");
+ if(b){
+  b.textContent=night?"☀️ 日間":"🌙 夜間";
+  b.setAttribute("aria-pressed",String(night));
+ }
+}
+
+function toggleTheme(){
+ setTheme(document.body.dataset.theme==="night"?"day":"night");
+}
+
+function monthName(d){
+ return new Intl.DateTimeFormat("zh-Hant-HK",{year:"numeric",month:"long"})
+  .format(new Date(d.getFullYear(),d.getMonth(),15));
+}
+
+function addEvent(d,e){
+ const k=key(d);
+ if(!eventsByDate.has(k))eventsByDate.set(k,[]);
+ eventsByDate.get(k).push(e);
+ if(!dotsByDate.has(k))dotsByDate.set(k,new Set());
+ dotsByDate.get(k).add(e.calendarId);
+}
+
+function parseDate(v){
+ const m=(v||"").match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})Z?)?/);
+ if(!m)return null;
+ return {
+  date:new Date(+m[1],+m[2]-1,+m[3]),
+  allDay:!m[4],
+  hour:+(m[4]||0),
+  minute:+(m[5]||0),
+  utc:!!(m[4]&&v.endsWith("Z"))
+ };
+}
+
+function formatTime(p){
+ if(!p||p.allDay)return "全日";
+ let h=p.hour;
+ if(p.utc)h=(h+8)%24;
+ return `${pad(h)}:${pad(p.minute)}`;
+}
+
+function unescapeICS(s){
+ return (s||"")
+  .replace(/\\n/gi," ")
+  .replace(/\\,/g,",")
+  .replace(/\\;/g,";")
+  .replace(/\\\\/g,"\\");
+}
+
+function parseICSEvent(block){
+ const props={};
+ for(const line of block.split(/\r?\n/)){
+  const i=line.indexOf(":");
+  if(i<0)continue;
+  const left=line.slice(0,i),value=line.slice(i+1),name=left.split(";")[0].toUpperCase();
+  if(!props[name])props[name]=[];
+  props[name].push({left,value});
+ }
+ const first=name=>(props[name]||[])[0]||null;
  const startProp=first("DTSTART"),endProp=first("DTEND");
  const summaryProp=first("SUMMARY"),descriptionProp=first("DESCRIPTION");
  const locationProp=first("LOCATION"),ruleProp=first("RRULE");
@@ -228,12 +588,12 @@ function addGoogleApiEvent(c,item,monthStart,monthEnd){
 }
 
 async function fetchGoogleCalendarEvents(c,monthStart,monthEnd,forceRefresh=false){
- if(!AIzaSyANoABJaE91-eHNEBdvoaK9-S5y8n1_OBU||AIzaSyANoABJaE91-eHNEBdvoaK9-S5y8n1_OBU==="PASTE_YOUR_NEW_API_KEY_HERE"){
+ if(!GOOGLE_CALENDAR_API_KEY||GOOGLE_CALENDAR_API_KEY==="AIzaSyANoABJaE91-eHNEBdvoaK9-S5y8n1_OBU"){
   throw new Error("請先在程式碼中填入 Google Calendar API 金鑰");
  }
 
  const params=new URLSearchParams({
-  key:AIzaSyANoABJaE91-eHNEBdvoaK9-S5y8n1_OBU,
+  key:GOOGLE_CALENDAR_API_KEY,
   singleEvents:"true",
   orderBy:"startTime",
   showDeleted:"false",
@@ -262,8 +622,64 @@ async function fetchGoogleCalendarEvents(c,monthStart,monthEnd,forceRefresh=fals
   if(item.status!=="cancelled")addGoogleApiEvent(c,item,monthStart,monthEnd);
  });
 }
+ async function loadEvents(forceRefresh=false){
+ const thisLoad=++loadSequence;
+ setLoading(true);
+ eventsByDate=new Map();
+ dotsByDate=new Map();
 
-   function renderLegend(){
+ const ms=new Date(shown.getFullYear(),shown.getMonth(),1);
+ const me=new Date(shown.getFullYear(),shown.getMonth()+1,1);
+ const failed=[];
+
+ await Promise.all(calendars.filter(c=>enabled.has(c.id)).map(async c=>{
+  try{
+   if(c.feedUrl){
+    const text=(await fetchCalendarText(c.feedUrl,forceRefresh)).replace(/\r?\n[ \t]/g,"");
+    if(thisLoad===loadSequence)parseCalendarEvents(text,c,ms,me);
+   }else{
+    await fetchGoogleCalendarEvents(c,ms,me,forceRefresh);
+   }
+  }catch(err){
+   console.warn("Cannot load events for "+c.name,err);
+   failed.push(c.name+": "+err.message);
+  }
+ }));
+
+ if(thisLoad!==loadSequence)return;
+
+ const categoryPriority=["學生生日","香港節慶假日","全教會","區","學生聚會","學生周間聚會","學生同工"];
+ const priorityById=new Map(calendars.map(c=>[
+  c.id,categoryPriority.indexOf(c.name)===-1?categoryPriority.length:categoryPriority.indexOf(c.name)
+ ]));
+
+ for(const arr of eventsByDate.values()){
+  arr.sort((a,b)=>{
+   if(a.allDay!==b.allDay)return a.allDay?-1:1;
+   if(!a.allDay){
+    const timeOrder=a.time.localeCompare(b.time);
+    if(timeOrder!==0)return timeOrder;
+   }
+   return (priorityById.get(a.calendarId)??categoryPriority.length)-
+    (priorityById.get(b.calendarId)??categoryPriority.length)||a.title.localeCompare(b.title);
+  });
+ }
+
+ renderPortrait();
+ renderLandscape();
+
+ const loadingText=$("loadingText");
+ if(failed.length){
+  loadingText.textContent="部分日曆載入失敗";
+  console.error("日曆載入失敗：",failed);
+  setTimeout(()=>{
+   if(thisLoad===loadSequence)loadingText.textContent="載入活動…";
+  },6000);
+ }
+ setLoading(false);
+}
+
+function renderLegend(){
  $("legend").innerHTML="";
  calendars.forEach(c=>{
   let el=document.createElement("div");
@@ -499,7 +915,7 @@ function renderSelected(){
  feed.append(iframe);
 }
 
-function renderLandscape(){
+ function renderLandscape(){
  $("landscapeTitle").textContent=monthName(shown);
  const host=$("landscapeGrid");
  host.innerHTML="";
