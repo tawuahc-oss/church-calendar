@@ -116,65 +116,39 @@ body[data-theme="night"] .feed iframe{background:#17191f}
 .landscape-checks{padding:4px 0;gap:4px;border:0;overflow-x:auto;flex-wrap:nowrap;white-space:nowrap}
 .landscape-checks .check{flex-shrink:0;font-size:.78rem;padding:4px 7px}
 .event-list{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;flex:1}
-
-/* 直向模式不顯示底部 Google 日曆嵌入視窗 */
-@media (orientation:portrait){
- .feed{display:none!important}
-}
-
+@media (orientation:portrait){.feed{display:none!important}}
 @media(max-width:600px) and (orientation:portrait){
- .app{padding:9px 7px}
- .brand{font-size:.6rem}
- h1{font-size:1.25rem}
- .top{margin-bottom:8px}
- .monthbar{margin:6px 0 9px}
- .nav button{min-width:33px;min-height:34px;padding:5px 8px}
- .weekdays div{font-size:.7rem;padding:6px 0}
- .day{min-height:clamp(44px,12vw,62px);gap:2px}
- .daynum{width:23px;height:23px;font-size:.82rem}
- .legend{gap:6px 9px;padding:8px}
- .legend-item{font-size:.7rem}
- .calendar-checks{padding:8px;gap:5px}
- .check{font-size:.69rem;padding:5px 6px}
+ .app{padding:9px 7px}.brand{font-size:.6rem}h1{font-size:1.25rem}.top{margin-bottom:8px}
+ .monthbar{margin:6px 0 9px}.nav button{min-width:33px;min-height:34px;padding:5px 8px}
+ .weekdays div{font-size:.7rem;padding:6px 0}.day{min-height:clamp(44px,12vw,62px);gap:2px}
+ .daynum{width:23px;height:23px;font-size:.82rem}.legend{gap:6px 9px;padding:8px}
+ .legend-item{font-size:.7rem}.calendar-checks{padding:8px;gap:5px}.check{font-size:.69rem;padding:5px 6px}
  .feed iframe{height:330px}
 }
-
 @media (orientation:landscape){
- .app{height:100dvh;max-width:none;padding:5px 8px;overflow:hidden}
- .top{height:34px;margin:0 0 3px}
+ .app{height:100dvh;max-width:none;padding:5px 8px;overflow:hidden}.top{height:34px;margin:0 0 3px}
  .brand{display:block;font-size:.55rem;letter-spacing:.06em;line-height:1.1;margin-bottom:2px}
- h1{font-size:1rem;margin:0}
- .clock{font-size:.65rem}
- #time{font-size:.8rem}
+ h1{font-size:1rem;margin:0}.clock{font-size:.65rem}#time{font-size:.8rem}
  .monthbar,.cal-shell,.day-events,.notice{display:none!important}
  .landscape-calendar{display:block;height:calc(100dvh - 45px);width:100%}
- .landscape-head{height:29px;margin:0}
- .landscape-title{font-size:clamp(1rem,2.3vh,1.35rem)}
+ .landscape-head{height:29px;margin:0}.landscape-title{font-size:clamp(1rem,2.3vh,1.35rem)}
  .landscape-head .nav button{min-height:27px;min-width:32px;padding:2px 8px;border-radius:6px;font-size:.9rem}
  .landscape-checks{height:34px;margin:0;overflow-x:auto;overflow-y:hidden}
  .landscape-checks .check{font-size:clamp(.68rem,1.5vh,.85rem);padding:4px 7px}
- .landscape-grid{height:calc(100% - 63px)}
- .lwday{font-size:clamp(.7rem,1.5vh,.9rem);padding:3px 0}
- .lday{padding:3px}
- .ldaynum{font-size:clamp(.78rem,1.8vh,1rem);margin-bottom:2px;flex-shrink:0}
+ .landscape-grid{height:calc(100% - 63px)}.lwday{font-size:clamp(.7rem,1.5vh,.9rem);padding:3px 0}
+ .lday{padding:3px}.ldaynum{font-size:clamp(.78rem,1.8vh,1rem);margin-bottom:2px;flex-shrink:0}
  .lday.today .ldaynum{width:22px;height:22px}
  .levent{font-size:clamp(.68rem,1.55vh,.9rem);line-height:1.2;padding:3px 4px;margin:1px 0}
- .levent.timed-event{padding:1px 0;gap:3px}
- .event-dot{width:5px;height:5px;min-width:5px}
+ .levent.timed-event{padding:1px 0;gap:3px}.event-dot{width:5px;height:5px;min-width:5px}
 }
 @media (orientation:landscape) and (max-height:430px){
- .landscape-checks{height:28px}
- .landscape-grid{height:calc(100% - 57px)}
+ .landscape-checks{height:28px}.landscape-grid{height:calc(100% - 57px)}
  .landscape-checks .check{font-size:.65rem;padding:3px 5px}
- .levent{font-size:clamp(.62rem,1.45vh,.78rem);padding:2px 3px}
- .levent.timed-event{padding:1px 0}
+ .levent{font-size:clamp(.62rem,1.45vh,.78rem);padding:2px 3px}.levent.timed-event{padding:1px 0}
 }
 @media(min-width:1000px) and (pointer:fine) and (orientation:portrait){
- .app{max-width:1600px;padding:20px 24px}
- .month-title{font-size:2.5rem}
- .weekdays div{font-size:1rem}
- .daynum{font-size:1.1rem}
- .legend-item{font-size:.9rem}
+ .app{max-width:1600px;padding:20px 24px}.month-title{font-size:2.5rem}
+ .weekdays div{font-size:1rem}.daynum{font-size:1.1rem}.legend-item{font-size:.9rem}
 }
 </style>
 </head>
@@ -245,7 +219,7 @@ body[data-theme="night"] .feed iframe{background:#17191f}
  </div>
 </div>
 
-<div class="notice">直向模式以圓點標示有活動的日期；橫向模式在桌面及手機橫向時使用同一款月曆；可用上方類別選項篩選活動。活動資料透過 Google Calendar API 讀取；香港節慶假日使用公開日曆資料來源。</div>
+<div class="notice">直向模式以圓點標示有活動的日期；橫向模式在桌面及手機橫向時使用同一款月曆；可用上方類別選項篩選活動。活動資料透過公開 iCalendar 訂閱來源讀取，不需要 Google API 金鑰。</div>
 </div>
 
 <script>
@@ -256,10 +230,8 @@ const calendars=[
  {name:"學生周間聚會",id:"6d5e78d1ae879ea7dd573f6193354eae02b085523b874cb0fb30b3736cd6e322@group.calendar.google.com",color:"#FFBF16"},
  {name:"學生生日",id:"640bce4eda2a30e86dfe565dee12ac630bdc9454004d219e3ab359682f722bfe@group.calendar.google.com",color:"#FF9800"},
  {name:"學生聚會",id:"0e5684c7eea55390ead078357f529444010f25599c092a48717bdb6bcbbb217d@group.calendar.google.com",color:"#03A9F4"},
+ {name:"香港節慶假日",id:"hk-public-holidays",feedUrl:"https://www.1823.gov.hk/common/ical/gc/tc.ics",color:"#D95D39"}
 ];
-
-// 請只修改下一行：填入新建立的 Google Calendar API 金鑰。不要把金鑰分享給他人。
-const GOOGLE_CALENDAR_API_KEY = "AIzaSyBuJZ5lNEay5NK48DbC5ERvv6FW5sZBGG8";
 
 const enabled=new Set(calendars.map(c=>c.id));
 const $=id=>document.getElementById(id);
@@ -491,10 +463,9 @@ async function fetchCalendarText(ics,forceRefresh=false){
  const request=(async()=>{
   const encoded=encodeURIComponent(ics);
   const targets=[
-   `https://proxy.cors.dev/${ics}`,
    `https://api.allorigins.win/raw?url=${encoded}`,
-   `https://corsproxy.io/?url=${encoded}`,
-   `https://api.codetabs.com/v1/proxy?quest=${encoded}`
+   `https://api.codetabs.com/v1/proxy?quest=${encoded}`,
+   `https://corsproxy.io/?url=${encoded}`
   ];
   let lastError;
 
@@ -524,107 +495,7 @@ async function fetchCalendarText(ics,forceRefresh=false){
  try{return await request}finally{feedRequests.delete(ics)}
 }
 
-function apiDateParts(value){
- const d=new Date(value);
- const parts=new Intl.DateTimeFormat("en-CA",{
-  timeZone:"Asia/Hong_Kong",year:"numeric",month:"2-digit",day:"2-digit",
-  hour:"2-digit",minute:"2-digit",hourCycle:"h23"
- }).formatToParts(d);
- const o=Object.fromEntries(parts.map(p=>[p.type,p.value]));
- return {date:new Date(+o.year,+o.month-1,+o.day),hour:+o.hour,minute:+o.minute};
-}
-
-function addGoogleApiEvent(c,item,monthStart,monthEnd){
- if(!item.start)return;
- const allDay=!!item.start.date;
- let start;
-
- if(allDay){
-  const m=item.start.date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if(!m)return;
-  start={date:new Date(+m[1],+m[2]-1,+m[3]),allDay:true,hour:0,minute:0};
- }else{
-  if(!item.start.dateTime)return;
-  const p=apiDateParts(item.start.dateTime);
-  start={...p,allDay:false,utc:false};
- }
-
- let end=null;
- if(allDay&&item.end?.date){
-  const m=item.end.date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if(m)end={date:new Date(+m[1],+m[2]-1,+m[3]),allDay:true};
- }else if(!allDay&&item.end?.dateTime){
-  const p=apiDateParts(item.end.dateTime);
-  end={...p,allDay:false,utc:false};
- }
-
- const event={
-  start,end,
-  title:item.summary||"(沒有活動名稱)",
-  description:item.description||"",
-  location:item.location||"",
-  status:item.status==="cancelled"?"CANCELLED":""
- };
-
- const duration=end?Math.max(1,Math.round((end.date-start.date)/86400000)):1;
- for(let offset=0;offset<duration;offset++){
-  const day=new Date(start.date.getFullYear(),start.date.getMonth(),start.date.getDate()+offset);
-  if(day>=monthStart&&day<monthEnd){
-   addEvent(day,{
-    title:event.title,
-    description:event.description,
-    location:event.location,
-    time:allDay?"全日":`${pad(start.hour)}:${pad(start.minute)}`,
-    endTime:allDay?"全日":(end?`${pad(end.hour)}:${pad(end.minute)}`:""),
-    calendarId:c.id,
-    calendarName:c.name,
-    color:c.color,
-    allDay,
-    date:new Date(day.getFullYear(),day.getMonth(),day.getDate())
-   });
-  }
- }
-}
-
-async function fetchGoogleCalendarEvents(c,monthStart,monthEnd,forceRefresh=false){
-if (
-  !GOOGLE_CALENDAR_API_KEY ||
-  GOOGLE_CALENDAR_API_KEY === "AIzaSyBuJZ5lNEay5NK48DbC5ERvv6FW5sZBGG8"
-) {
-  throw new Error("請先在程式碼中填入 Google Calendar API 金鑰");
-}
-
- const params=new URLSearchParams({
-  key:GOOGLE_CALENDAR_API_KEY,
-  singleEvents:"true",
-  orderBy:"startTime",
-  showDeleted:"false",
-  maxResults:"2500",
-  timeMin:`${monthStart.getFullYear()}-${pad(monthStart.getMonth()+1)}-01T00:00:00+08:00`,
-  timeMax:`${monthEnd.getFullYear()}-${pad(monthEnd.getMonth()+1)}-01T00:00:00+08:00`,
-  timeZone:"Asia/Hong_Kong"
- });
-
- const out=[];
- let pageToken="";
- do{
-  if(pageToken)params.set("pageToken",pageToken);
-  else params.delete("pageToken");
-
-  const url=`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(c.id)}/events?${params.toString()}`;
-  const response=await fetch(url,{cache:forceRefresh?"no-store":"default"});
-  const data=await response.json();
-
-  if(!response.ok)throw new Error(data?.error?.message||`Google Calendar API HTTP ${response.status}`);
-  out.push(...(data.items||[]));
-  pageToken=data.nextPageToken||"";
- }while(pageToken);
-
- out.forEach(item=>{
-  if(item.status!=="cancelled")addGoogleApiEvent(c,item,monthStart,monthEnd);
- });
-}
- async function loadEvents(forceRefresh=false){
+async function loadEvents(forceRefresh=false){
  const thisLoad=++loadSequence;
  setLoading(true);
  eventsByDate=new Map();
@@ -636,12 +507,10 @@ if (
 
  await Promise.all(calendars.filter(c=>enabled.has(c.id)).map(async c=>{
   try{
-   if(c.feedUrl){
-    const text=(await fetchCalendarText(c.feedUrl,forceRefresh)).replace(/\r?\n[ \t]/g,"");
-    if(thisLoad===loadSequence)parseCalendarEvents(text,c,ms,me);
-   }else{
-    await fetchGoogleCalendarEvents(c,ms,me,forceRefresh);
-   }
+   // Use public iCalendar feeds so no Google API key is required.
+   const icsUrl=c.feedUrl || `https://calendar.google.com/calendar/ical/${encodeURIComponent(c.id)}/public/basic.ics`;
+   const text=(await fetchCalendarText(icsUrl,forceRefresh)).replace(/\r?\n[ \t]/g,"");
+   if(thisLoad===loadSequence)parseCalendarEvents(text,c,ms,me);
   }catch(err){
    console.warn("Cannot load events for "+c.name,err);
    failed.push(c.name+": "+err.message);
@@ -917,7 +786,7 @@ function renderSelected(){
  feed.append(iframe);
 }
 
- function renderLandscape(){
+function renderLandscape(){
  $("landscapeTitle").textContent=monthName(shown);
  const host=$("landscapeGrid");
  host.innerHTML="";
