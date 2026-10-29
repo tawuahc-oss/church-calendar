@@ -82,8 +82,9 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
 .levent{font-size:clamp(.68rem,.82vw,.88rem);line-height:1.22;border-radius:3px;padding:3px 4px;margin:1px 0;overflow-wrap:anywhere;word-break:break-word;color:var(--ink);background:transparent;flex-shrink:0}
 .levent.allday-event{color:#2f2b26;background:var(--event-color);border-left:0!important;border-radius:3px;padding:3px 4px}
 .levent.timed-event{display:flex;align-items:flex-start;gap:4px;padding:2px 1px;margin:1px 0}
-.event-dot{display:inline-block;width:6px;height:6px;min-width:6px;border-radius:50%;margin-top:.35em;flex-shrink:0}
+.event-dot{display:inline-block;width:.9em;height:.9em;min-width:.9em;border-radius:50%;margin-top:.12em;flex-shrink:0}
 .levent .etime{font-weight:750;white-space:nowrap}
+.landscape-empty{font-size:.8rem;color:var(--muted);padding:10px}
 .landscape-checks{padding:4px 0;gap:4px;border:0;overflow-x:auto;flex-wrap:nowrap;white-space:nowrap}
 .landscape-checks .check{flex-shrink:0;font-size:.78rem;padding:4px 7px}
 .event-list{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;flex:1}
@@ -124,7 +125,6 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
  .lday.today .ldaynum{width:22px;height:22px}
  .levent{font-size:clamp(.68rem,1.55vh,.9rem);line-height:1.2;padding:3px 4px;margin:1px 0}
  .levent.timed-event{padding:1px 0;gap:3px}
- .event-dot{width:5px;height:5px;min-width:5px}
 }
 @media (orientation:landscape) and (max-height:430px){
  .landscape-checks{height:28px}
@@ -224,9 +224,15 @@ async function loadEvents(){
  eventsByDate=new Map();dotsByDate=new Map();
  const ms=new Date(shown.getFullYear(),shown.getMonth(),1),me=new Date(shown.getFullYear(),shown.getMonth()+1,1);
  await Promise.all(calendars.filter(c=>enabled.has(c.id)).map(async c=>{try{const ics=`https://calendar.google.com/calendar/ical/${encodeURIComponent(c.id)}/public/basic.ics`;const text=(await fetchCalendarText(ics)).replace(/\r?\n[ \t]/g,"");text.split("BEGIN:VEVENT").slice(1).forEach(b=>parseEventBlock(b.split("END:VEVENT")[0],c,ms,me))}catch(err){console.warn("Cannot load events for "+c.name,err)}}));
- // 學生生日優先，其餘活動按時間先後排列。
- const birthdayId=calendars.find(c=>c.name==="學生生日")?.id;
- for(const arr of eventsByDate.values())arr.sort((a,b)=>(a.calendarId===birthdayId?0:1)-(b.calendarId===birthdayId?0:1)||a.time.localeCompare(b.time));
+ // 全日活動優先；全日活動按類別優先次序排列。
+ // 有指定時間的活動按開始時間排列；同一時間才按類別優先次序排列。
+ const categoryPriority=["學生生日","香港節慶假日","全教會","區","學生聚會","學生周間聚會","學生同工"];
+ const priorityById=new Map(calendars.map(c=>[c.id,categoryPriority.indexOf(c.name)===-1?categoryPriority.length:categoryPriority.indexOf(c.name)]));
+ for(const arr of eventsByDate.values())arr.sort((a,b)=>{
+  if(a.allDay!==b.allDay)return a.allDay?-1:1;
+  if(!a.allDay){const timeOrder=a.time.localeCompare(b.time);if(timeOrder!==0)return timeOrder;}
+  return (priorityById.get(a.calendarId)??categoryPriority.length)-(priorityById.get(b.calendarId)??categoryPriority.length)||a.title.localeCompare(b.title);
+ });
  renderPortrait();renderLandscape();
 }
 function renderLegend(){
@@ -236,7 +242,8 @@ function renderLegend(){
 }
 function makeDot(d){
  const wrap=document.createElement("span");wrap.className="marks";
- const dayEvents=(eventsByDate.get(key(d))||[]).filter(e=>enabled.has(e.calendarId)),seenBars=new Set();
+ const dayEvents=(eventsByDate.get(key(d))||[]).filter(e=>enabled.has(e.calendarId));
+ const seenBars=new Set();
  dayEvents.filter(e=>e.allDay).forEach(e=>{const unique=e.calendarId+"|"+e.title;if(seenBars.has(unique))return;seenBars.add(unique);const bar=document.createElement("span");bar.className="all-day-mark";bar.style.background=e.color;bar.title=e.title;wrap.append(bar)});
  const timedCalendars=new Set(dayEvents.filter(e=>!e.allDay).map(e=>e.calendarId));
  if(timedCalendars.size){const row=document.createElement("span");row.className="dot-row";timedCalendars.forEach(id=>{const c=calendars.find(x=>x.id===id);if(c){const dot=document.createElement("span");dot.className="mark";dot.style.background=c.color;dot.title=c.name;row.append(dot)}});wrap.append(row)}
@@ -266,12 +273,18 @@ function renderLandscape(){
   let date=new Date(shown.getFullYear(),shown.getMonth(),d),cell=document.createElement("div");cell.className="lday";
   if(date.toDateString()===today.toDateString())cell.classList.add("today");
   let num=document.createElement("div");num.className="ldaynum";num.textContent=d;cell.append(num);
-  const ev=(eventsByDate.get(key(date))||[]).filter(e=>enabled.has(e.calendarId)),list=document.createElement("div");list.className="event-list";
+  const ev=(eventsByDate.get(key(date))||[]).filter(e=>enabled.has(e.calendarId));
+  const list=document.createElement("div");list.className="event-list";
   ev.forEach(e=>{
    let item=document.createElement("div");item.className="levent "+(e.allDay?"allday-event":"timed-event");
    item.style.setProperty("--event-color",e.color+"88");
-   if(e.allDay){item.style.background=e.color+"88";let time=document.createElement("span");time.className="etime";time.textContent="全日 ";item.append(time)}
-   else{let dot=document.createElement("span");dot.className="event-dot";dot.style.background=e.color;item.append(dot);let time=document.createElement("span");time.className="etime";time.textContent=e.time+" ";item.append(time)}
+   if(e.allDay){
+    item.style.background=e.color+"88";
+    let time=document.createElement("span");time.className="etime";time.textContent="全日 ";item.append(time);
+   }else{
+    let dot=document.createElement("span");dot.className="event-dot";dot.style.background=e.color;item.append(dot);
+    let time=document.createElement("span");time.className="etime";time.textContent=e.time+" ";item.append(time);
+   }
    let title=document.createElement("span");title.textContent=e.title;item.append(title);list.append(item);
   });
   cell.append(list);host.append(cell);
