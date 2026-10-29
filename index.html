@@ -7,9 +7,9 @@
 <meta name="theme-color" content="#f7f1e8">
 <link rel="icon" type="image/png" href="/church-calendar/calendar-thumbnail.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/church-calendar/calendar-thumbnail.png">
-<meta name="apple-mobile-web-app-title" content="學生月程">
+<meta name="apple-mobile-web-app-title" content="北區學生月程">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>學生月程</title>
+<title>北區學生月程</title>
 <style>
 :root{--bg:#f7f1e8;--paper:#fffdf9;--ink:#3e342b;--muted:#887b6d;--line:#e5dacb;--accent:#87684a}
 *{box-sizing:border-box}
@@ -18,6 +18,19 @@ body{overflow-x:hidden}
 button,input{font:inherit}
 button{touch-action:manipulation}
 .app{max-width:1500px;margin:auto;padding:clamp(8px,2vw,24px);min-width:0}
+.theme-toggle{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:9px;padding:6px 10px;font-size:.8rem;font-weight:750;white-space:nowrap;cursor:pointer}
+.top-actions{display:flex;align-items:center;gap:12px}
+body[data-theme="night"]{--bg:#17191f;--paper:#22252d;--ink:#eee8df;--muted:#b3a89a;--line:#41434b;--accent:#c49a70;background:var(--bg);color:var(--ink)}
+body[data-theme="night"] .weekdays,body[data-theme="night"] .lwday{background:#30313a;color:#d6c7b6}
+body[data-theme="night"] .day.blank,body[data-theme="night"] .lday[style*="background"]{background:#1d2027!important}
+body[data-theme="night"] .day.selected{background:#40352c}
+body[data-theme="night"] .check{background:#2c2d35;border-color:#454650;color:var(--ink)}
+body[data-theme="night"] .legend-item{color:#d4c9bc}
+body[data-theme="night"] .levent{color:#171717}
+body[data-theme="night"] .cal-shell,body[data-theme="night"] .day-events{box-shadow:none}
+body[data-theme="night"] .events-head,body[data-theme="night"] .calendar-checks{border-color:var(--line)}
+body[data-theme="night"] .nav button{background:var(--paper);color:var(--ink);border-color:var(--line)}
+body[data-theme="night"] .nav .todaybtn{background:var(--accent)!important;color:#171717!important}
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
 .brand{font-size:.7rem;letter-spacing:.1em;color:var(--accent);font-weight:800}
 h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
@@ -87,7 +100,6 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
  .check{font-size:.69rem;padding:5px 6px}
  .feed iframe{height:330px}
 }
-/* 桌面及手機橫向共用同一款月曆 */
 @media (orientation:landscape){
  .app{height:100dvh;max-width:none;padding:5px 8px;overflow:hidden}
  .top{height:27px;margin:0 0 3px}
@@ -127,8 +139,8 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
 <body>
 <div class="app">
 <header class="top">
- <div><div class="brand">COMMUNITY CALENDAR</div><h1>學生月程</h1></div>
- <div class="clock"><div id="time">--:--:--</div><div id="dateLabel">香港時間</div></div>
+ <div><div class="brand">THE CHURCH OF GOD IN HONG KONG</div><h1>北區學生月程</h1></div>
+ <div class="top-actions"><button class="theme-toggle" id="themeToggle" type="button" aria-label="切換日間及夜間模式">🌙 夜間</button><div class="clock"><div id="time">--:--:--</div><div id="dateLabel">香港時間</div></div></div>
 </header>
 <div class="monthbar">
  <div class="month-title" id="monthTitle">載入中…</div>
@@ -137,7 +149,7 @@ h1{font-size:clamp(1.25rem,3vw,2rem);margin:3px 0 0}
 <section class="landscape-calendar" id="landscapeCalendar">
  <div class="landscape-head">
   <div class="landscape-title" id="landscapeTitle"></div>
-  <div class="nav"><button id="lprev" aria-label="上一個月">‹</button><button id="ltoday" class="todaybtn">今天</button><button id="lnext" aria-label="下一個月">›</button></div>
+  <div class="nav"><button id="lprev" aria-label="上一個月">‹</button><button id="ltoday" class="todaybtn">今天</button><button id="lnext" aria-label="下一個月">›</button><button class="theme-toggle" id="landscapeThemeToggle" type="button">🌙 夜間</button></div>
  </div>
  <div class="calendar-checks landscape-checks" id="landscapeChecks" aria-label="選擇要顯示的活動類別"></div>
  <div class="landscape-grid" id="landscapeGrid"></div>
@@ -159,7 +171,8 @@ const calendars=[
 {name:"學生同工",id:"144b428f9fda4934be111d528e42fd6e831abf7880aca0b94576a6f449b5fb60@group.calendar.google.com",color:"#EF746C"},
 {name:"學生周間聚會",id:"6d5e78d1ae879ea7dd573f6193354eae02b085523b874cb0fb30b3736cd6e322@group.calendar.google.com",color:"#FFBF16"},
 {name:"學生生日",id:"640bce4eda2a30e86dfe565dee12ac630bdc9454004d219e3ab359682f722bfe@group.calendar.google.com",color:"#FF9800"},
-{name:"學生聚會",id:"0e5684c7eea55390ead078357f529444010f25599c092a48717bdb6bcbbb217d@group.calendar.google.com",color:"#03A9F4"}
+{name:"學生聚會",id:"0e5684c7eea55390ead078357f529444010f25599c092a48717bdb6bcbbb217d@group.calendar.google.com",color:"#03A9F4"},
+{name:"香港節慶假日",id:"zh-hk.hong_kong#holiday@group.v.calendar.google.com",color:"#D95D39"}
 ];
 const enabled=new Set(calendars.map(c=>c.id));
 const $=id=>document.getElementById(id);
@@ -170,6 +183,8 @@ let today=nowHK(),shown=new Date(today.getFullYear(),today.getMonth(),1),selecte
 let eventsByDate=new Map(),dotsByDate=new Map();
 const dayNames=["日","一","二","三","四","五","六"];
 function dateLabel(d){return new Intl.DateTimeFormat("zh-Hant-HK",{timeZone:"Asia/Hong_Kong",year:"numeric",month:"long",day:"numeric",weekday:"long"}).format(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),4)))}
+function setTheme(theme){document.body.dataset.theme=theme;const night=theme==="night";["themeToggle","landscapeThemeToggle"].forEach(id=>{const b=$(id);if(b){b.textContent=night?"☀️ 日間":"🌙 夜間";b.setAttribute("aria-pressed",String(night))}})}
+function toggleTheme(){setTheme(document.body.dataset.theme==="night"?"day":"night")}
 function updateClock(){let n=new Date();$("time").textContent=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Hong_Kong",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(n);$("dateLabel").textContent=new Intl.DateTimeFormat("zh-Hant-HK",{timeZone:"Asia/Hong_Kong",year:"numeric",month:"short",day:"numeric",weekday:"short"}).format(n)}
 function monthName(d){return new Intl.DateTimeFormat("zh-Hant-HK",{year:"numeric",month:"long"}).format(new Date(d.getFullYear(),d.getMonth(),15))}
 function addEvent(d,e){let k=key(d);if(!eventsByDate.has(k))eventsByDate.set(k,[]);eventsByDate.get(k).push(e);if(!dotsByDate.has(k))dotsByDate.set(k,new Set());dotsByDate.get(k).add(e.calendarId)}
@@ -221,9 +236,15 @@ async function loadEvents(){
    const ics=`https://calendar.google.com/calendar/ical/${encodeURIComponent(c.id)}/public/basic.ics`;
    const text=(await fetchCalendarText(ics)).replace(/\r?\n[ \t]/g,"");
    text.split("BEGIN:VEVENT").slice(1).forEach(b=>parseEventBlock(b.split("END:VEVENT")[0],c,ms,me));
-  }catch(err){console.warn("無法讀取日曆："+c.name,err)}
+  }catch(err){console.warn("Cannot load events for "+c.name,err)}
  }));
- for(const [k,arr] of eventsByDate)arr.sort((a,b)=>a.time.localeCompare(b.time));
+ // 學生生日永遠排第一，其餘活動按時間先後排列。
+ const birthdayId=calendars.find(c=>c.name==="學生生日")?.id;
+ for(const arr of eventsByDate.values())arr.sort((a,b)=>{
+  const aBirthday=a.calendarId===birthdayId?0:1;
+  const bBirthday=b.calendarId===birthdayId?0:1;
+  return aBirthday-bBirthday || a.time.localeCompare(b.time);
+ });
  renderPortrait();renderLandscape();
 }
 function renderLegend(){
@@ -278,6 +299,7 @@ function shiftMonth(delta){shown=new Date(shown.getFullYear(),shown.getMonth()+d
 function goToday(){today=nowHK();shown=new Date(today.getFullYear(),today.getMonth(),1);selected=new Date(today.getFullYear(),today.getMonth(),today.getDate());renderPortrait();renderLandscape();loadEvents()}
 $("prev").addEventListener("click",()=>shiftMonth(-1));$("next").addEventListener("click",()=>shiftMonth(1));$("today").addEventListener("click",goToday);
 $("lprev").addEventListener("click",()=>shiftMonth(-1));$("lnext").addEventListener("click",()=>shiftMonth(1));$("ltoday").addEventListener("click",goToday);
+$("themeToggle").addEventListener("click",toggleTheme);$("landscapeThemeToggle").addEventListener("click",toggleTheme);setTheme("day");
 renderLegend();renderPortrait();renderLandscape();updateClock();setInterval(updateClock,1000);loadEvents();
 </script>
 </body>
