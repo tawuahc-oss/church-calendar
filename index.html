@@ -256,6 +256,7 @@ const calendars=[
  {name:"學生周間聚會",id:"6d5e78d1ae879ea7dd573f6193354eae02b085523b874cb0fb30b3736cd6e322@group.calendar.google.com",color:"#FFBF16"},
  {name:"學生生日",id:"640bce4eda2a30e86dfe565dee12ac630bdc9454004d219e3ab359682f722bfe@group.calendar.google.com",color:"#FF9800"},
  {name:"學生聚會",id:"0e5684c7eea55390ead078357f529444010f25599c092a48717bdb6bcbbb217d@group.calendar.google.com",color:"#03A9F4"},
+ // {name:"香港節慶假日",id:"hk-public-holidays",feedUrl:"http://www.1823.gov.hk/common/ical/gc/tc.ics",color:"#D95D39"}
  {name:"香港節慶假日",id:"hk-public-holidays",feedUrl:"http://www.1823.gov.hk/common/ical/gc/tc.ics",color:"#D95D39"}
 ];
 
@@ -588,9 +589,12 @@ function addGoogleApiEvent(c,item,monthStart,monthEnd){
 }
 
 async function fetchGoogleCalendarEvents(c,monthStart,monthEnd,forceRefresh=false){
- if(!GOOGLE_CALENDAR_API_KEY||GOOGLE_CALENDAR_API_KEY==="AIzaSyANoABJaE91-eHNEBdvoaK9-S5y8n1_OBU"){
+if (
+  !GOOGLE_CALENDAR_API_KEY ||
+  GOOGLE_CALENDAR_API_KEY === "PASTE_YOUR_NEW_API_KEY_HERE"
+) {
   throw new Error("請先在程式碼中填入 Google Calendar API 金鑰");
- }
+}
 
  const params=new URLSearchParams({
   key:GOOGLE_CALENDAR_API_KEY,
