@@ -72,12 +72,12 @@ h1 {
   cursor:pointer;
 }
 .refresh-button {
-  font-size:1.15rem;
-  line-height:1;
-  padding:5px 9px;
-  min-width:34px;
-  min-height:31px;
+  font-size:.78rem;
+  line-height:1.2;
+  padding:7px 11px;
+  min-height:32px;
 }
+.refresh-button::before { content:"↻ "; font-size:1rem; }
 .refresh-button:disabled { opacity:.55; cursor:wait; }
 .refresh-button.spinning { animation:spin .75s linear infinite; }
 .loading-status {
@@ -764,7 +764,7 @@ body[data-theme="night"] .solar-term { color:#8bd8b4; }
       <span id="loadingText">載入活動…</span>
     </span>
     <button class="theme-toggle" id="themeToggle" type="button">🌙 夜間</button>
-    <button class="theme-toggle refresh-button" id="refreshButton" type="button" aria-label="重新載入活動">↻</button>
+    <button class="theme-toggle refresh-button" id="refreshButton" type="button" aria-label="立即檢查 Google 日曆">立即檢查</button>
   </div>
 </header>
 
@@ -821,7 +821,7 @@ body[data-theme="night"] .solar-term { color:#8bd8b4; }
   </div>
 </div>
 
-<div class="notice">月曆顯示農曆日期、傳統節日及二十四節氣。活動資料透過 GitHub Actions 更新的公開 iCalendar 快照讀取，不需要 Google Calendar API 金鑰。</div>
+<div class="notice">月曆顯示農曆日期、傳統節日及二十四節氣。活動資料每分鐘檢查公開 Google 日曆；亦可按刷新按鈕即時檢查。</div>
 </div>
 
 <script>
@@ -835,6 +835,14 @@ const calendars=[
   {name:"學生聚會",id:"0e5684c7eea55390ead078357f529444010f25599c092a48717bdb6bcbbb217d@group.calendar.google.com",file:"student-gatherings.ics",color:"#03A9F4"},
   {name:"香港節慶假日",id:"hk-public-holidays",file:"hk-holidays.ics",color:"#D95D39"}
 ];
+
+// After deploying the Cloudflare Worker, paste its workers.dev URL here.
+// Example: https://church-calendar-sync.YOUR-SUBDOMAIN.workers.dev
+const CALENDAR_WORKER_URL="https://church-calendar-sync.tawuahc.workers.dev";
+const AUTO_CHECK_INTERVAL=60_000;
+let lastCalendarVersion="";
+let checkingCalendar=false;
+let autoCheckTimer=null;
 
 const enabled=new Set(calendars.map(c=>c.id));
 const $=id=>document.getElementById(id);
@@ -1282,7 +1290,22 @@ function parseCalendarEvents(text,c,monthStart,monthEnd){
   });
 }
 
+function workerConfigured(){
+  return CALENDAR_WORKER_URL.startsWith("https://") &&
+    !CALENDAR_WORKER_URL.includes("PASTE_YOUR_CLOUDFLARE_WORKER_URL_HERE");
+}
+
 async function fetchCalendarText(calendar,forceRefresh=false){
+  if(workerConfigured()){
+    const url=CALENDAR_WORKER_URL.replace(/\/$/,"")+"/data/"+encodeURIComponent(calendar.file);
+    const response=await fetch(url,{cache:"no-store"});
+    if(!response.ok)throw new Error(`Calendar service HTTP ${response.status}`);
+    const text=await response.text();
+    if(!text.includes("BEGIN:VCALENDAR"))throw new Error("Invalid calendar data from sync service");
+    return text;
+  }
+
+  // Temporary fallback while the Cloudflare Worker has not yet been configured.
   const base=location.protocol==="file:"
     ?"https://tawuhac-oss.github.io/church-calendar/data/"
     :new URL("data/",location.href).href;
@@ -1341,8 +1364,70 @@ async function loadEvents(forceRefresh=false){
     $("loadingText").textContent="部分日曆載入失敗";
     console.error("日曆載入失敗：",failed);
   }
-
   setLoading(false);
+  return failed;
+}
+
+async function checkGoogleCalendars(manual=false,forceRefresh=false){
+  if(!workerConfigured()){
+    if(manual)$("loadingText").textContent="請先設定 Cloudflare 更新服務";
+    return;
+  }
+  if(checkingCalendar)return;
+  checkingCalendar=true;
+  const button=$("refreshButton");
+  if(manual){
+    button.disabled=true;
+    button.classList.add("spinning");
+    button.textContent="檢查中…";
+    $("loadingText").textContent="正在直接檢查 Google 日曆…";
+  }
+  try{
+    let result;
+    if(manual||forceRefresh){
+      const response=await fetch(CALENDAR_WORKER_URL.replace(/\/$/,"")+"/refresh",{
+        method:"POST",cache:"no-store"
+      });
+      if(!response.ok)throw new Error(`Refresh request failed: ${response.status}`);
+      result=await response.json();
+    }else{
+      const response=await fetch(CALENDAR_WORKER_URL.replace(/\/$/,"")+"/version",{cache:"no-store"});
+      if(!response.ok)throw new Error(`Version check failed: ${response.status}`);
+      result=await response.json();
+    }
+
+    const version=result.version||"";
+    const changed=!!result.changed || (version && version!==lastCalendarVersion);
+    if(changed){
+      await loadEvents(true);
+      lastCalendarVersion=version;
+      $("loadingText").textContent="日曆已更新 · "+nowHK().toLocaleTimeString("zh-HK",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    }else if(manual){
+      lastCalendarVersion=version||lastCalendarVersion;
+      $("loadingText").textContent="已檢查 Google 日曆，沒有新變更";
+    }else if(forceRefresh){
+      lastCalendarVersion=version||lastCalendarVersion;
+    }
+  }catch(err){
+    console.error("Google Calendar sync check failed",err);
+    if(manual)$("loadingText").textContent="檢查失敗，暫時保留現有日程";
+  }finally{
+    checkingCalendar=false;
+    if(manual){
+      button.disabled=false;
+      button.classList.remove("spinning");
+      button.textContent="立即檢查";
+    }
+  }
+}
+
+function startCalendarAutoCheck(){
+  if(autoCheckTimer)clearInterval(autoCheckTimer);
+  if(workerConfigured()){
+    // Initialise the Worker cache once, then check its version every minute.
+    checkGoogleCalendars(false,true);
+    autoCheckTimer=setInterval(()=>checkGoogleCalendars(false),AUTO_CHECK_INTERVAL);
+  }
 }
 
 /* ===== Category controls ===== */
@@ -1737,22 +1822,7 @@ $("themeToggle").addEventListener("click",()=>{
   renderSelected();
 });
 
-$("refreshButton").addEventListener("click",async()=>{
-  const b=$("refreshButton");
-  if(b.disabled)return;
-
-  b.disabled=true;
-  b.classList.add("spinning");
-  $("loadingText").textContent="正在更新…";
-
-  try{
-    await loadEvents(true);
-  }finally{
-    b.disabled=false;
-    b.classList.remove("spinning");
-    $("loadingText").textContent="載入活動…";
-  }
-});
+$("refreshButton").addEventListener("click",()=>checkGoogleCalendars(true));
 
 $("eventClose").addEventListener("click",closeEventDetails);
 $("eventModal").addEventListener("click",e=>{
@@ -1767,6 +1837,7 @@ renderLegend();
 renderPortrait();
 renderLandscape();
 loadEvents();
+startCalendarAutoCheck();
 </script>
 </body>
 </html>
