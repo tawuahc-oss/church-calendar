@@ -60,26 +60,44 @@ h1 {
   align-items:center;
   gap:8px;
 }
-.theme-toggle {
+.icon-action {
+  width:44px;
+  height:44px;
+  min-width:44px;
+  padding:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
   border:1px solid var(--line);
+  border-radius:12px;
   background:var(--paper);
   color:var(--ink);
-  border-radius:9px;
-  padding:6px 10px;
-  font-size:.8rem;
-  font-weight:750;
-  white-space:nowrap;
   cursor:pointer;
+  box-shadow:0 1px 2px rgba(60,45,30,.04);
+  transition:background .15s ease, border-color .15s ease, opacity .15s ease;
 }
-.refresh-button {
-  font-size:.78rem;
-  line-height:1.2;
-  padding:7px 11px;
-  min-height:32px;
+.icon-action:hover { background:#f3ede4; }
+.icon-action:active { transform:translateY(1px); }
+.icon-action:disabled { opacity:.55; cursor:wait; }
+.refresh-icon {
+  display:inline-block;
+  font-size:23px;
+  line-height:1;
+  font-family:Arial,sans-serif;
+  font-weight:500;
 }
-.refresh-button::before { content:"↻ "; font-size:1rem; }
-.refresh-button:disabled { opacity:.55; cursor:wait; }
-.refresh-button.spinning { animation:spin .75s linear infinite; }
+.theme-icon {
+  display:inline-block;
+  font-size:21px;
+  line-height:1;
+}
+.refresh-icon.spinning { animation:spin .75s linear infinite; }
+body[data-theme="night"] .icon-action {
+  background:#292c35;
+  border-color:#505360;
+  color:#f2f2f5;
+}
+body[data-theme="night"] .icon-action:hover { background:#353945; }
 .loading-status {
   display:none;
   align-items:center;
@@ -152,7 +170,7 @@ body[data-theme="night"] .check {
   color:#f2f2f5;
 }
 body[data-theme="night"] .check input { accent-color:#d5a979; }
-body[data-theme="night"] .theme-toggle,
+body[data-theme="night"] .icon-action,
 body[data-theme="night"] .nav button {
   background:#292c35;
   border-color:#505360;
@@ -763,8 +781,14 @@ body[data-theme="night"] .solar-term { color:#8bd8b4; }
       <span class="loading-spinner" aria-hidden="true"></span>
       <span id="loadingText">載入活動…</span>
     </span>
-    <button class="theme-toggle" id="themeToggle" type="button">🌙 夜間</button>
-    <button class="theme-toggle refresh-button" id="refreshButton" type="button" aria-label="立即檢查 Google 日曆">立即檢查</button>
+    <button class="icon-action" id="refreshButton" type="button"
+      aria-label="立即檢查 Google 日曆" title="立即檢查 Google 日曆">
+      <span class="refresh-icon" id="refreshIcon" aria-hidden="true">↻</span>
+    </button>
+    <button class="icon-action" id="themeToggle" type="button"
+      aria-label="切換日間／夜間模式" title="切換日間／夜間模式" aria-pressed="false">
+      <span class="theme-icon" id="themeIcon" aria-hidden="true">☼</span>
+    </button>
   </div>
 </header>
 
@@ -1022,8 +1046,10 @@ function setTheme(theme){
   const night=theme==="night";
   const b=$("themeToggle");
   if(b){
-    b.textContent=night?"☀️ 日間":"🌙 夜間";
+    $("themeIcon").textContent=night?"☾":"☼";
     b.setAttribute("aria-pressed",String(night));
+    b.setAttribute("aria-label",night?"切換至日間模式":"切換至夜間模式");
+    b.title=night?"切換至日間模式":"切換至夜間模式";
   }
 }
 
@@ -1307,7 +1333,7 @@ async function fetchCalendarText(calendar,forceRefresh=false){
 
   // Temporary fallback while the Cloudflare Worker has not yet been configured.
   const base=location.protocol==="file:"
-    ?"https://tawuhac-oss.github.io/church-calendar/data/"
+    ?"https://tawuahc-oss.github.io/church-calendar/data/"
     :new URL("data/",location.href).href;
   const url=base+calendar.file+(forceRefresh?"?refresh="+Date.now():"");
   const response=await fetch(url,{cache:forceRefresh?"no-store":"default"});
@@ -1378,8 +1404,8 @@ async function checkGoogleCalendars(manual=false,forceRefresh=false){
   const button=$("refreshButton");
   if(manual){
     button.disabled=true;
-    button.classList.add("spinning");
-    button.textContent="檢查中…";
+    $("refreshIcon").classList.add("spinning");
+    button.title="正在檢查 Google 日曆…";
     $("loadingText").textContent="正在直接檢查 Google 日曆…";
   }
   try{
@@ -1397,7 +1423,7 @@ async function checkGoogleCalendars(manual=false,forceRefresh=false){
     }
 
     const version=result.version||"";
-    const changed=!!result.changed || (version && version!==lastCalendarVersion);
+    const changed=!!version && version!==lastCalendarVersion;
     if(changed){
       await loadEvents(true);
       lastCalendarVersion=version;
@@ -1415,8 +1441,8 @@ async function checkGoogleCalendars(manual=false,forceRefresh=false){
     checkingCalendar=false;
     if(manual){
       button.disabled=false;
-      button.classList.remove("spinning");
-      button.textContent="立即檢查";
+      $("refreshIcon").classList.remove("spinning");
+      button.title="立即檢查 Google 日曆";
     }
   }
 }
