@@ -55,6 +55,7 @@ h1 {
   font-size:clamp(1.25rem,3vw,2rem);
   margin:3px 0 0;
 }
+.loading-status { display:none !important; }
 .top-actions {
   display:flex;
   align-items:center;
@@ -69,56 +70,24 @@ h1 {
   align-items:center;
   justify-content:center;
   border:1px solid var(--line);
-  border-radius:12px;
+  border-radius:10px;
   background:var(--paper);
   color:var(--ink);
   cursor:pointer;
-  box-shadow:0 1px 2px rgba(60,45,30,.04);
-  transition:background .15s ease, border-color .15s ease, opacity .15s ease;
+  box-shadow:none;
+  transition:background .15s ease,border-color .15s ease,opacity .15s ease;
 }
-.icon-action:hover { background:#f3ede4; }
+.icon-action svg {
+  width:23px;
+  height:23px;
+}
+.icon-action:hover { border-color:var(--accent); }
 .icon-action:active { transform:translateY(1px); }
-.icon-action:disabled { opacity:.55; cursor:wait; }
-.refresh-icon {
-  display:inline-block;
-  font-size:23px;
-  line-height:1;
-  font-family:Arial,sans-serif;
-  font-weight:500;
-}
-.theme-icon {
-  display:inline-block;
-  font-size:21px;
-  line-height:1;
-}
-.refresh-icon.spinning { animation:spin .75s linear infinite; }
-body[data-theme="night"] .icon-action {
-  background:#292c35;
-  border-color:#505360;
-  color:#f2f2f5;
-}
-body[data-theme="night"] .icon-action:hover { background:#353945; }
-.loading-status {
-  display:none;
-  align-items:center;
-  gap:6px;
-  color:var(--muted);
-  font-size:.76rem;
-  white-space:nowrap;
-}
-.loading-status.active { display:inline-flex; }
-.loading-spinner {
-  width:14px;
-  height:14px;
-  border:2px solid var(--line);
-  border-top-color:var(--accent);
-  border-radius:50%;
-  animation:spin .75s linear infinite;
-  flex-shrink:0;
-}
+.icon-action:disabled { opacity:.65; cursor:wait; }
+#refreshIcon.spinning { animation:spin .8s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
 @media(prefers-reduced-motion:reduce) {
-  .loading-spinner { animation-duration:2s; }
+  #refreshIcon.spinning { animation:none; }
 }
 
 /* 夜間模式 */
@@ -777,17 +746,26 @@ body[data-theme="night"] .solar-term { color:#8bd8b4; }
     <h1>北區學生月程</h1>
   </div>
   <div class="top-actions">
-    <span class="loading-status" id="loadingStatus" role="status" aria-live="polite">
-      <span class="loading-spinner" aria-hidden="true"></span>
-      <span id="loadingText">載入活動…</span>
+    <span class="loading-status" id="loadingStatus" role="status" aria-live="polite" aria-hidden="true">
+      <span id="loadingText"></span>
     </span>
+    <button class="icon-action" id="themeToggle" type="button"
+      aria-label="切換夜間模式" title="切換夜間模式" aria-pressed="false">
+      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2 M12 20v2 M4.93 4.93l1.42 1.42 M17.65 17.65l1.42 1.42 M2 12h2 M20 12h2 M4.93 19.07l1.42-1.42 M17.65 6.35l1.42-1.42"></path>
+      </svg>
+    </button>
     <button class="icon-action" id="refreshButton" type="button"
       aria-label="立即檢查 Google 日曆" title="立即檢查 Google 日曆">
-      <span class="refresh-icon" id="refreshIcon" aria-hidden="true">↻</span>
-    </button>
-    <button class="icon-action" id="themeToggle" type="button"
-      aria-label="切換日間／夜間模式" title="切換日間／夜間模式" aria-pressed="false">
-      <span class="theme-icon" id="themeIcon" aria-hidden="true">☼</span>
+      <svg id="refreshIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 7v5h-5"></path>
+        <path d="M4 17v-5h5"></path>
+        <path d="M5.6 9a7 7 0 0 1 11.6-2L20 12"></path>
+        <path d="M4 12l2.8 5a7 7 0 0 0 11.6-2"></path>
+      </svg>
     </button>
   </div>
 </header>
@@ -1046,7 +1024,9 @@ function setTheme(theme){
   const night=theme==="night";
   const b=$("themeToggle");
   if(b){
-    $("themeIcon").textContent=night?"☾":"☼";
+    $("themeIcon").innerHTML=night
+      ? '<path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"></path>'
+      : '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2 M12 20v2 M4.93 4.93l1.42 1.42 M17.65 17.65l1.42 1.42 M2 12h2 M20 12h2 M4.93 19.07l1.42-1.42 M17.65 6.35l1.42-1.42"></path>';
     b.setAttribute("aria-pressed",String(night));
     b.setAttribute("aria-label",night?"切換至日間模式":"切換至夜間模式");
     b.title=night?"切換至日間模式":"切換至夜間模式";
